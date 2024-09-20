@@ -16,7 +16,6 @@
 import traceback
 
 import pytest
-
 from lerobot.common.utils.utils import init_hydra_config
 
 from .utils import DEVICE, ROBOT_CONFIG_PATH_TEMPLATE

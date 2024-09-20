@@ -11,8 +11,8 @@ import imageio
 import numpy
 import torch
 from huggingface_hub import snapshot_download
-
-from lerobot.common.policies.diffusion.modeling_diffusion import DiffusionPolicy
+from lerobot.common.policies.diffusion.modeling_diffusion import \
+    DiffusionPolicy
 
 # Create a directory to store the video of the evaluation
 output_directory = Path("outputs/eval/example_pusht_diffusion")
@@ -32,7 +32,9 @@ if torch.cuda.is_available():
     print("GPU is available. Device set to:", device)
 else:
     device = torch.device("cpu")
-    print(f"GPU is not available. Device set to: {device}. Inference will be slower than on GPU.")
+    print(
+        f"GPU is not available. Device set to: {device}. Inference will be slower than on GPU."
+    )
     # Decrease the number of reverse-diffusion steps (trades off a bit of quality for 10x speed)
     policy.diffusion.num_inference_steps = 10
 

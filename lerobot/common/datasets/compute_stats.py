@@ -20,7 +20,6 @@ import einops
 import torch
 import tqdm
 from datasets import Image
-
 from lerobot.common.datasets.video_utils import VideoFrame
 
 
@@ -50,12 +49,20 @@ def get_stats_einops_patterns(dataset, num_workers=0):
         if isinstance(feats_type, (VideoFrame, Image)):
             # sanity check that images are channel first
             _, c, h, w = batch[key].shape
-            assert c < h and c < w, f"expect channel first images, but instead {batch[key].shape}"
+            assert (
+                c < h and c < w
+            ), f"expect channel first images, but instead {batch[key].shape}"
 
             # sanity check that images are float32 in range [0,1]
-            assert batch[key].dtype == torch.float32, f"expect torch.float32, but instead {batch[key].dtype=}"
-            assert batch[key].max() <= 1, f"expect pixels lower than 1, but instead {batch[key].max()=}"
-            assert batch[key].min() >= 0, f"expect pixels greater than 1, but instead {batch[key].min()=}"
+            assert (
+                batch[key].dtype == torch.float32
+            ), f"expect torch.float32, but instead {batch[key].dtype=}"
+            assert (
+                batch[key].max() <= 1
+            ), f"expect pixels lower than 1, but instead {batch[key].max()=}"
+            assert (
+                batch[key].min() >= 0
+            ), f"expect pixels greater than 1, but instead {batch[key].min()=}"
 
             stats_patterns[key] = "b c h w -> c 1 1"
         elif batch[key].ndim == 2:
@@ -103,7 +110,11 @@ def compute_stats(dataset, batch_size=32, num_workers=16, max_num_samples=None):
     running_item_count = 0  # for online mean computation
     dataloader = create_seeded_dataloader(dataset, batch_size, seed=1337)
     for i, batch in enumerate(
-        tqdm.tqdm(dataloader, total=ceil(max_num_samples / batch_size), desc="Compute mean, min, max")
+        tqdm.tqdm(
+            dataloader,
+            total=ceil(max_num_samples / batch_size),
+            desc="Compute mean, min, max",
+        )
     ):
         this_batch_size = len(batch["index"])
         running_item_count += this_batch_size
@@ -118,9 +129,16 @@ def compute_stats(dataset, batch_size=32, num_workers=16, max_num_samples=None):
             # and x is the current batch mean. Some rearrangement is then required to avoid risking
             # numerical overflow. Another hint: Nₙ₋₁ = Nₙ - Bₙ. Rearrangement yields
             # x̄ₙ = x̄ₙ₋₁ + Bₙ * (xₙ - x̄ₙ₋₁) / Nₙ
-            mean[key] = mean[key] + this_batch_size * (batch_mean - mean[key]) / running_item_count
-            max[key] = torch.maximum(max[key], einops.reduce(batch[key], pattern, "max"))
-            min[key] = torch.minimum(min[key], einops.reduce(batch[key], pattern, "min"))
+            mean[key] = (
+                mean[key]
+                + this_batch_size * (batch_mean - mean[key]) / running_item_count
+            )
+            max[key] = torch.maximum(
+                max[key], einops.reduce(batch[key], pattern, "max")
+            )
+            min[key] = torch.minimum(
+                min[key], einops.reduce(batch[key], pattern, "min")
+            )
 
         if i == ceil(max_num_samples / batch_size) - 1:
             break
@@ -129,7 +147,9 @@ def compute_stats(dataset, batch_size=32, num_workers=16, max_num_samples=None):
     running_item_count = 0  # for online std computation
     dataloader = create_seeded_dataloader(dataset, batch_size, seed=1337)
     for i, batch in enumerate(
-        tqdm.tqdm(dataloader, total=ceil(max_num_samples / batch_size), desc="Compute std")
+        tqdm.tqdm(
+            dataloader, total=ceil(max_num_samples / batch_size), desc="Compute std"
+        )
     ):
         this_batch_size = len(batch["index"])
         running_item_count += this_batch_size
@@ -143,7 +163,9 @@ def compute_stats(dataset, batch_size=32, num_workers=16, max_num_samples=None):
             # Numerically stable update step for mean computation (where the mean is over squared
             # residuals).See notes in the mean computation loop above.
             batch_std = einops.reduce((batch[key] - mean[key]) ** 2, pattern, "mean")
-            std[key] = std[key] + this_batch_size * (batch_std - std[key]) / running_item_count
+            std[key] = (
+                std[key] + this_batch_size * (batch_std - std[key]) / running_item_count
+            )
 
         if i == ceil(max_num_samples / batch_size) - 1:
             break
@@ -181,7 +203,14 @@ def aggregate_stats(ls_datasets) -> dict[str, torch.Tensor]:
         for stat_key in ["min", "max"]:
             # compute `max(dataset_0["max"], dataset_1["max"], ...)`
             stats[data_key][stat_key] = einops.reduce(
-                torch.stack([d.stats[data_key][stat_key] for d in ls_datasets if data_key in d.stats], dim=0),
+                torch.stack(
+                    [
+                        d.stats[data_key][stat_key]
+                        for d in ls_datasets
+                        if data_key in d.stats
+                    ],
+                    dim=0,
+                ),
                 "n ... -> ...",
                 stat_key,
             )
@@ -204,7 +233,10 @@ def aggregate_stats(ls_datasets) -> dict[str, torch.Tensor]:
         # numerical overflow!
         stats[data_key]["std"] = torch.sqrt(
             sum(
-                (d.stats[data_key]["std"] ** 2 + (d.stats[data_key]["mean"] - stats[data_key]["mean"]) ** 2)
+                (
+                    d.stats[data_key]["std"] ** 2
+                    + (d.stats[data_key]["mean"] - stats[data_key]["mean"]) ** 2
+                )
                 * (d.num_samples / total_samples)
                 for d in ls_datasets
                 if data_key in d.stats

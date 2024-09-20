@@ -47,7 +47,11 @@ def make_env(cfg: DictConfig, n_envs: int | None = None) -> gym.vector.VectorEnv
         gym_kwgs["max_episode_steps"] = cfg.env.episode_length
 
     # batched version of the env that returns an observation of shape (b, c)
-    env_cls = gym.vector.AsyncVectorEnv if cfg.eval.use_async_envs else gym.vector.SyncVectorEnv
+    env_cls = (
+        gym.vector.AsyncVectorEnv
+        if cfg.eval.use_async_envs
+        else gym.vector.SyncVectorEnv
+    )
     env = env_cls(
         [
             lambda: gym.make(gym_handle, disable_env_checker=True, **gym_kwgs)

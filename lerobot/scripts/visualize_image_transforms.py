@@ -59,10 +59,9 @@ python lerobot/scripts/visualize_image_transforms.py \
 from pathlib import Path
 
 import hydra
-from torchvision.transforms import ToPILImage
-
 from lerobot.common.datasets.lerobot_dataset import LeRobotDataset
 from lerobot.common.datasets.transforms import get_image_transforms
+from torchvision.transforms import ToPILImage
 
 OUTPUT_DIR = Path("outputs/image_transforms")
 to_pil = ToPILImage()
@@ -162,8 +161,12 @@ def visualize_transforms(cfg, output_dir: Path, n_examples: int = 5):
     print("\nOriginal frame saved to:")
     print(f"    {output_dir / 'original_frame.png'}.")
 
-    save_config_all_transforms(cfg.training.image_transforms, original_frame, output_dir, n_examples)
-    save_config_single_transforms(cfg.training.image_transforms, original_frame, output_dir, n_examples)
+    save_config_all_transforms(
+        cfg.training.image_transforms, original_frame, output_dir, n_examples
+    )
+    save_config_single_transforms(
+        cfg.training.image_transforms, original_frame, output_dir, n_examples
+    )
 
 
 @hydra.main(version_base="1.2", config_name="default", config_path="../configs")

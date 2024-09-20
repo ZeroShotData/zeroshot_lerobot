@@ -18,7 +18,6 @@ from functools import wraps
 
 import pytest
 import torch
-
 from lerobot.common.utils.import_utils import is_package_available
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -117,9 +116,13 @@ def require_package_arg(func):
         if "required_packages" in arg_names:
             # Get the index of 'required_packages' and retrieve the value from args
             index = arg_names.index("required_packages")
-            required_packages = args[index] if len(args) > index else kwargs.get("required_packages")
+            required_packages = (
+                args[index] if len(args) > index else kwargs.get("required_packages")
+            )
         else:
-            raise ValueError("Function does not have 'required_packages' as an argument.")
+            raise ValueError(
+                "Function does not have 'required_packages' as an argument."
+            )
 
         if required_packages is None:
             return func(*args, **kwargs)
@@ -175,7 +178,9 @@ def require_robot(func):
         robot_type = kwargs.get("robot_type")
 
         if request is None:
-            raise ValueError("The 'request' fixture must be passed to the test function as a parameter.")
+            raise ValueError(
+                "The 'request' fixture must be passed to the test function as a parameter."
+            )
 
         # The function `is_robot_available` is defined in `tests/conftest.py`
         if not request.getfixturevalue("is_robot_available"):

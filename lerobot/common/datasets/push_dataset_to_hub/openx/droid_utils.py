@@ -80,7 +80,9 @@ def rand_swap_exterior_images(img1, img2):
     """
     Randomly swaps the two exterior images (for training with single exterior input).
     """
-    return tf.cond(tf.random.uniform(shape=[]) > 0.5, lambda: (img1, img2), lambda: (img2, img1))
+    return tf.cond(
+        tf.random.uniform(shape=[]) > 0.5, lambda: (img1, img2), lambda: (img2, img1)
+    )
 
 
 def droid_baseact_transform(trajectory: Dict[str, Any]) -> Dict[str, Any]:
@@ -98,11 +100,12 @@ def droid_baseact_transform(trajectory: Dict[str, Any]) -> Dict[str, Any]:
         ),
         axis=-1,
     )
-    trajectory["observation"]["exterior_image_1_left"], trajectory["observation"]["exterior_image_2_left"] = (
-        rand_swap_exterior_images(
-            trajectory["observation"]["exterior_image_1_left"],
-            trajectory["observation"]["exterior_image_2_left"],
-        )
+    (
+        trajectory["observation"]["exterior_image_1_left"],
+        trajectory["observation"]["exterior_image_2_left"],
+    ) = rand_swap_exterior_images(
+        trajectory["observation"]["exterior_image_1_left"],
+        trajectory["observation"]["exterior_image_2_left"],
     )
     trajectory["observation"]["proprio"] = tf.concat(
         (
@@ -119,7 +122,8 @@ def droid_wristact_transform(trajectory: Dict[str, Any]) -> Dict[str, Any]:
     DROID dataset transformation for actions expressed in *wrist* frame of the robot.
     """
     wrist_act = velocity_act_to_wrist_frame(
-        trajectory["action_dict"]["cartesian_velocity"], trajectory["observation"]["cartesian_position"]
+        trajectory["action_dict"]["cartesian_velocity"],
+        trajectory["observation"]["cartesian_position"],
     )
     trajectory["action"] = tf.concat(
         (
@@ -128,11 +132,12 @@ def droid_wristact_transform(trajectory: Dict[str, Any]) -> Dict[str, Any]:
         ),
         axis=-1,
     )
-    trajectory["observation"]["exterior_image_1_left"], trajectory["observation"]["exterior_image_2_left"] = (
-        rand_swap_exterior_images(
-            trajectory["observation"]["exterior_image_1_left"],
-            trajectory["observation"]["exterior_image_2_left"],
-        )
+    (
+        trajectory["observation"]["exterior_image_1_left"],
+        trajectory["observation"]["exterior_image_2_left"],
+    ) = rand_swap_exterior_images(
+        trajectory["observation"]["exterior_image_1_left"],
+        trajectory["observation"]["exterior_image_2_left"],
     )
     trajectory["observation"]["proprio"] = tf.concat(
         (
@@ -194,7 +199,10 @@ def zero_action_filter(traj: Dict) -> bool:
         ]
     )
     droid_norm_0_act = (
-        2 * (tf.zeros_like(traj["action"][:, :6]) - droid_q01) / (droid_q99 - droid_q01 + 1e-8) - 1
+        2
+        * (tf.zeros_like(traj["action"][:, :6]) - droid_q01)
+        / (droid_q99 - droid_q01 + 1e-8)
+        - 1
     )
 
     return tf.reduce_any(tf.math.abs(traj["action"][:, :6] - droid_norm_0_act) > 1e-5)

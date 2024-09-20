@@ -16,10 +16,10 @@
 import logging
 
 import torch
-from omegaconf import ListConfig, OmegaConf
-
-from lerobot.common.datasets.lerobot_dataset import LeRobotDataset, MultiLeRobotDataset
+from lerobot.common.datasets.lerobot_dataset import (LeRobotDataset,
+                                                     MultiLeRobotDataset)
 from lerobot.common.datasets.transforms import get_image_transforms
+from omegaconf import ListConfig, OmegaConf
 
 
 def resolve_delta_timestamps(cfg):
@@ -112,6 +112,8 @@ def make_dataset(cfg, split: str = "train") -> LeRobotDataset | MultiLeRobotData
             for stats_type, listconfig in stats_dict.items():
                 # example of stats_type: min, max, mean, std
                 stats = OmegaConf.to_container(listconfig, resolve=True)
-                dataset.stats[key][stats_type] = torch.tensor(stats, dtype=torch.float32)
+                dataset.stats[key][stats_type] = torch.tensor(
+                    stats, dtype=torch.float32
+                )
 
     return dataset

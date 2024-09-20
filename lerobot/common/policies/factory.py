@@ -16,10 +16,9 @@
 import inspect
 import logging
 
-from omegaconf import DictConfig, OmegaConf
-
 from lerobot.common.policies.policy_protocol import Policy
 from lerobot.common.utils.utils import get_safe_torch_device
+from omegaconf import DictConfig, OmegaConf
 
 
 def _policy_cfg_from_hydra_cfg(policy_cfg_class, hydra_cfg):
@@ -47,13 +46,16 @@ def _policy_cfg_from_hydra_cfg(policy_cfg_class, hydra_cfg):
 def get_policy_and_config_classes(name: str) -> tuple[Policy, object]:
     """Get the policy's class and config class given a name (matching the policy class' `name` attribute)."""
     if name == "tdmpc":
-        from lerobot.common.policies.tdmpc.configuration_tdmpc import TDMPCConfig
+        from lerobot.common.policies.tdmpc.configuration_tdmpc import \
+            TDMPCConfig
         from lerobot.common.policies.tdmpc.modeling_tdmpc import TDMPCPolicy
 
         return TDMPCPolicy, TDMPCConfig
     elif name == "diffusion":
-        from lerobot.common.policies.diffusion.configuration_diffusion import DiffusionConfig
-        from lerobot.common.policies.diffusion.modeling_diffusion import DiffusionPolicy
+        from lerobot.common.policies.diffusion.configuration_diffusion import \
+            DiffusionConfig
+        from lerobot.common.policies.diffusion.modeling_diffusion import \
+            DiffusionPolicy
 
         return DiffusionPolicy, DiffusionConfig
     elif name == "act":
@@ -62,7 +64,8 @@ def get_policy_and_config_classes(name: str) -> tuple[Policy, object]:
 
         return ACTPolicy, ACTConfig
     elif name == "vqbet":
-        from lerobot.common.policies.vqbet.configuration_vqbet import VQBeTConfig
+        from lerobot.common.policies.vqbet.configuration_vqbet import \
+            VQBeTConfig
         from lerobot.common.policies.vqbet.modeling_vqbet import VQBeTPolicy
 
         return VQBeTPolicy, VQBeTConfig
@@ -71,7 +74,9 @@ def get_policy_and_config_classes(name: str) -> tuple[Policy, object]:
 
 
 def make_policy(
-    hydra_cfg: DictConfig, pretrained_policy_name_or_path: str | None = None, dataset_stats=None
+    hydra_cfg: DictConfig,
+    pretrained_policy_name_or_path: str | None = None,
+    dataset_stats=None,
 ) -> Policy:
     """Make an instance of a policy class.
 
@@ -104,7 +109,9 @@ def make_policy(
         # huggingface_hub should make it possible to avoid the hack:
         # https://github.com/huggingface/huggingface_hub/pull/2274.
         policy = policy_cls(policy_cfg)
-        policy.load_state_dict(policy_cls.from_pretrained(pretrained_policy_name_or_path).state_dict())
+        policy.load_state_dict(
+            policy_cls.from_pretrained(pretrained_policy_name_or_path).state_dict()
+        )
 
     policy.to(get_safe_torch_device(hydra_cfg.device))
 

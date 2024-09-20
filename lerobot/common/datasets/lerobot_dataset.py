@@ -21,18 +21,13 @@ from typing import Callable
 import datasets
 import torch
 import torch.utils
-
 from lerobot.common.datasets.compute_stats import aggregate_stats
-from lerobot.common.datasets.utils import (
-    calculate_episode_data_index,
-    load_episode_data_index,
-    load_hf_dataset,
-    load_info,
-    load_previous_and_future_frames,
-    load_stats,
-    load_videos,
-    reset_episode_index,
-)
+from lerobot.common.datasets.utils import (calculate_episode_data_index,
+                                           load_episode_data_index,
+                                           load_hf_dataset, load_info,
+                                           load_previous_and_future_frames,
+                                           load_stats, load_videos,
+                                           reset_episode_index)
 from lerobot.common.datasets.video_utils import VideoFrame, load_from_videos
 
 # For maintainers, see lerobot/common/datasets/push_dataset_to_hub/CODEBASE_VERSION.md
@@ -61,7 +56,9 @@ class LeRobotDataset(torch.utils.data.Dataset):
         # https://huggingface.co/docs/huggingface_hub/en/guides/download#faster-downloads
         self.hf_dataset = load_hf_dataset(repo_id, CODEBASE_VERSION, root, split)
         if split == "train":
-            self.episode_data_index = load_episode_data_index(repo_id, CODEBASE_VERSION, root)
+            self.episode_data_index = load_episode_data_index(
+                repo_id, CODEBASE_VERSION, root
+            )
         else:
             self.episode_data_index = calculate_episode_data_index(self.hf_dataset)
             self.hf_dataset = reset_episode_index(self.hf_dataset)
@@ -267,7 +264,9 @@ class MultiLeRobotDataset(torch.utils.data.Dataset):
                 "multi-dataset functionality currently only keeps common keys."
             )
         for repo_id, dataset in zip(self.repo_ids, self._datasets, strict=True):
-            extra_keys = set(dataset.hf_dataset.features).difference(intersection_data_keys)
+            extra_keys = set(dataset.hf_dataset.features).difference(
+                intersection_data_keys
+            )
             logging.warning(
                 f"keys {extra_keys} of {repo_id} were disabled as they are not contained in all the "
                 "other datasets."
@@ -315,7 +314,13 @@ class MultiLeRobotDataset(torch.utils.data.Dataset):
     def features(self) -> datasets.Features:
         features = {}
         for dataset in self._datasets:
-            features.update({k: v for k, v in dataset.features.items() if k not in self.disabled_data_keys})
+            features.update(
+                {
+                    k: v
+                    for k, v in dataset.features.items()
+                    if k not in self.disabled_data_keys
+                }
+            )
         return features
 
     @property
@@ -376,7 +381,9 @@ class MultiLeRobotDataset(torch.utils.data.Dataset):
                 continue
             break
         else:
-            raise AssertionError("We expect the loop to break out as long as the index is within bounds.")
+            raise AssertionError(
+                "We expect the loop to break out as long as the index is within bounds."
+            )
         item = self._datasets[dataset_idx][idx - start_idx]
         item["dataset_index"] = torch.tensor(dataset_idx)
         for data_key in self.disabled_data_keys:

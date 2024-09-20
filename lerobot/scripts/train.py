@@ -26,14 +26,11 @@ import hydra
 import numpy as np
 import torch
 from deepdiff import DeepDiff
-from omegaconf import DictConfig, ListConfig, OmegaConf
-from termcolor import colored
-from torch import nn
-from torch.cuda.amp import GradScaler
-
-from lerobot.common.datasets.factory import make_dataset, resolve_delta_timestamps
+from lerobot.common.datasets.factory import (make_dataset,
+                                             resolve_delta_timestamps)
 from lerobot.common.datasets.lerobot_dataset import MultiLeRobotDataset
-from lerobot.common.datasets.online_buffer import OnlineBuffer, compute_sampler_weights
+from lerobot.common.datasets.online_buffer import (OnlineBuffer,
+                                                   compute_sampler_weights)
 from lerobot.common.datasets.sampler import EpisodeAwareSampler
 from lerobot.common.datasets.utils import cycle
 from lerobot.common.envs.factory import make_env
@@ -41,14 +38,15 @@ from lerobot.common.logger import Logger, log_output_dir
 from lerobot.common.policies.factory import make_policy
 from lerobot.common.policies.policy_protocol import PolicyWithUpdate
 from lerobot.common.policies.utils import get_device_from_parameters
-from lerobot.common.utils.utils import (
-    format_big_number,
-    get_safe_torch_device,
-    init_hydra_config,
-    init_logging,
-    set_global_seed,
-)
+from lerobot.common.utils.utils import (format_big_number,
+                                        get_safe_torch_device,
+                                        init_hydra_config, init_logging,
+                                        set_global_seed)
 from lerobot.scripts.eval import eval_policy
+from omegaconf import DictConfig, ListConfig, OmegaConf
+from termcolor import colored
+from torch import nn
+from torch.cuda.amp import GradScaler
 
 
 def make_optimizer_and_scheduler(cfg, policy):
@@ -71,7 +69,9 @@ def make_optimizer_and_scheduler(cfg, policy):
             },
         ]
         optimizer = torch.optim.AdamW(
-            optimizer_params_dicts, lr=cfg.training.lr, weight_decay=cfg.training.weight_decay
+            optimizer_params_dicts,
+            lr=cfg.training.lr,
+            weight_decay=cfg.training.weight_decay,
         )
         lr_scheduler = None
     elif cfg.policy.name == "diffusion":
@@ -94,7 +94,8 @@ def make_optimizer_and_scheduler(cfg, policy):
         optimizer = torch.optim.Adam(policy.parameters(), cfg.training.lr)
         lr_scheduler = None
     elif cfg.policy.name == "vqbet":
-        from lerobot.common.policies.vqbet.modeling_vqbet import VQBeTOptimizer, VQBeTScheduler
+        from lerobot.common.policies.vqbet.modeling_vqbet import (
+            VQBeTOptimizer, VQBeTScheduler)
 
         optimizer = VQBeTOptimizer(policy, cfg)
         lr_scheduler = VQBeTScheduler(optimizer, cfg)
@@ -244,7 +245,9 @@ def train(cfg: DictConfig, out_dir: str | None = None, job_name: str | None = No
     logging.info(pformat(OmegaConf.to_container(cfg)))
 
     if cfg.training.online_steps > 0 and isinstance(cfg.dataset_repo_id, ListConfig):
-        raise NotImplementedError("Online training with LeRobotMultiDataset is not implemented.")
+        raise NotImplementedError(
+            "Online training with LeRobotMultiDataset is not implemented."
+        )
 
     # If we are resuming a run, we need to check that a checkpoint exists in the log directory, and we need
     # to check for any differences between the provided config and the checkpoint's config.
@@ -254,7 +257,9 @@ def train(cfg: DictConfig, out_dir: str | None = None, job_name: str | None = No
                 "You have set resume=True, but there is no model checkpoint in "
                 f"{Logger.get_last_checkpoint_dir(out_dir)}"
             )
-        checkpoint_cfg_path = str(Logger.get_last_pretrained_model_dir(out_dir) / "config.yaml")
+        checkpoint_cfg_path = str(
+            Logger.get_last_pretrained_model_dir(out_dir) / "config.yaml"
+        )
         logging.info(
             colored(
                 "You have set resume=True, indicating that you wish to resume a run",
@@ -267,7 +272,9 @@ def train(cfg: DictConfig, out_dir: str | None = None, job_name: str | None = No
         # Check for differences between the checkpoint configuration and provided configuration.
         # Hack to resolve the delta_timestamps ahead of time in order to properly diff.
         resolve_delta_timestamps(cfg)
-        diff = DeepDiff(OmegaConf.to_container(checkpoint_cfg), OmegaConf.to_container(cfg))
+        diff = DeepDiff(
+            OmegaConf.to_container(checkpoint_cfg), OmegaConf.to_container(cfg)
+        )
         # Ignore the `resume` and parameters.
         if "values_changed" in diff and "root['resume']" in diff["values_changed"]:
             del diff["values_changed"]["root['resume']"]
@@ -329,7 +336,9 @@ def train(cfg: DictConfig, out_dir: str | None = None, job_name: str | None = No
     policy = make_policy(
         hydra_cfg=cfg,
         dataset_stats=offline_dataset.stats if not cfg.resume else None,
-        pretrained_policy_name_or_path=str(logger.last_pretrained_model_dir) if cfg.resume else None,
+        pretrained_policy_name_or_path=str(logger.last_pretrained_model_dir)
+        if cfg.resume
+        else None,
     )
     assert isinstance(policy, nn.Module)
     # Create optimizer and scheduler
@@ -342,36 +351,55 @@ def train(cfg: DictConfig, out_dir: str | None = None, job_name: str | None = No
     if cfg.resume:
         step = logger.load_last_training_state(optimizer, lr_scheduler)
 
-    num_learnable_params = sum(p.numel() for p in policy.parameters() if p.requires_grad)
+    num_learnable_params = sum(
+        p.numel() for p in policy.parameters() if p.requires_grad
+    )
     num_total_params = sum(p.numel() for p in policy.parameters())
 
     log_output_dir(out_dir)
     logging.info(f"{cfg.env.task=}")
-    logging.info(f"{cfg.training.offline_steps=} ({format_big_number(cfg.training.offline_steps)})")
+    logging.info(
+        f"{cfg.training.offline_steps=} ({format_big_number(cfg.training.offline_steps)})"
+    )
     logging.info(f"{cfg.training.online_steps=}")
-    logging.info(f"{offline_dataset.num_samples=} ({format_big_number(offline_dataset.num_samples)})")
+    logging.info(
+        f"{offline_dataset.num_samples=} ({format_big_number(offline_dataset.num_samples)})"
+    )
     logging.info(f"{offline_dataset.num_episodes=}")
     logging.info(f"{num_learnable_params=} ({format_big_number(num_learnable_params)})")
     logging.info(f"{num_total_params=} ({format_big_number(num_total_params)})")
 
     # Note: this helper will be used in offline and online training loops.
     def evaluate_and_checkpoint_if_needed(step, is_online):
-        _num_digits = max(6, len(str(cfg.training.offline_steps + cfg.training.online_steps)))
+        _num_digits = max(
+            6, len(str(cfg.training.offline_steps + cfg.training.online_steps))
+        )
         step_identifier = f"{step:0{_num_digits}d}"
 
         if cfg.training.eval_freq > 0 and step % cfg.training.eval_freq == 0:
             logging.info(f"Eval policy at step {step}")
-            with torch.no_grad(), torch.autocast(device_type=device.type) if cfg.use_amp else nullcontext():
+            with torch.no_grad(), torch.autocast(
+                device_type=device.type
+            ) if cfg.use_amp else nullcontext():
                 assert eval_env is not None
                 eval_info = eval_policy(
                     eval_env,
                     policy,
                     cfg.eval.n_episodes,
-                    videos_dir=Path(out_dir) / "eval" / f"videos_step_{step_identifier}",
+                    videos_dir=Path(out_dir)
+                    / "eval"
+                    / f"videos_step_{step_identifier}",
                     max_episodes_rendered=4,
                     start_seed=cfg.seed,
                 )
-            log_eval_info(logger, eval_info["aggregated"], step, cfg, offline_dataset, is_online=is_online)
+            log_eval_info(
+                logger,
+                eval_info["aggregated"],
+                step,
+                cfg,
+                offline_dataset,
+                is_online=is_online,
+            )
             if cfg.wandb.enable:
                 logger.log_video(eval_info["video_paths"][0], step, mode="eval")
             logging.info("Resume training")
@@ -440,7 +468,9 @@ def train(cfg: DictConfig, out_dir: str | None = None, job_name: str | None = No
         train_info["dataloading_s"] = dataloading_s
 
         if step % cfg.training.log_freq == 0:
-            log_train_info(logger, train_info, step, cfg, offline_dataset, is_online=False)
+            log_train_info(
+                logger, train_info, step, cfg, offline_dataset, is_online=False
+            )
 
         # Note: evaluate_and_checkpoint_if_needed happens **after** the `step`th training update has completed,
         # so we pass in step + 1.
@@ -473,8 +503,14 @@ def train(cfg: DictConfig, out_dir: str | None = None, job_name: str | None = No
     online_dataset = OnlineBuffer(
         online_buffer_path,
         data_spec={
-            **{k: {"shape": v, "dtype": np.dtype("float32")} for k, v in policy.config.input_shapes.items()},
-            **{k: {"shape": v, "dtype": np.dtype("float32")} for k, v in policy.config.output_shapes.items()},
+            **{
+                k: {"shape": v, "dtype": np.dtype("float32")}
+                for k, v in policy.config.input_shapes.items()
+            },
+            **{
+                k: {"shape": v, "dtype": np.dtype("float32")}
+                for k, v in policy.config.output_shapes.items()
+            },
             "next.reward": {"shape": (), "dtype": np.dtype("float32")},
             "next.done": {"shape": (), "dtype": np.dtype("?")},
             "next.success": {"shape": (), "dtype": np.dtype("?")},
@@ -486,7 +522,9 @@ def train(cfg: DictConfig, out_dir: str | None = None, job_name: str | None = No
 
     # If we are doing online rollouts asynchronously, deepcopy the policy to use for online rollouts (this
     # makes it possible to do online rollouts in parallel with training updates).
-    online_rollout_policy = deepcopy(policy) if cfg.training.do_online_rollout_async else policy
+    online_rollout_policy = (
+        deepcopy(policy) if cfg.training.do_online_rollout_async else policy
+    )
 
     # Create dataloader for online training.
     concat_dataset = torch.utils.data.ConcatDataset([offline_dataset, online_dataset])
@@ -523,7 +561,9 @@ def train(cfg: DictConfig, out_dir: str | None = None, job_name: str | None = No
 
     online_step = 0
     online_rollout_s = 0  # time take to do online rollout
-    update_online_buffer_s = 0  # time taken to update the online buffer with the online rollout data
+    update_online_buffer_s = (
+        0  # time taken to update the online buffer with the online rollout data
+    )
     # Time taken waiting for the online buffer to finish being updated. This is relevant when using the async
     # online rollout option.
     await_update_online_buffer_s = 0
@@ -547,11 +587,16 @@ def train(cfg: DictConfig, out_dir: str | None = None, job_name: str | None = No
                     online_env,
                     online_rollout_policy,
                     n_episodes=cfg.training.online_rollout_n_episodes,
-                    max_episodes_rendered=min(10, cfg.training.online_rollout_n_episodes),
+                    max_episodes_rendered=min(
+                        10, cfg.training.online_rollout_n_episodes
+                    ),
                     videos_dir=logger.log_dir / "online_rollout_videos",
                     return_episode_data=True,
                     start_seed=(
-                        rollout_start_seed := (rollout_start_seed + cfg.training.batch_size) % 1000000
+                        rollout_start_seed := (
+                            rollout_start_seed + cfg.training.batch_size
+                        )
+                        % 1000000
                     ),
                 )
             online_rollout_s = time.perf_counter() - start_rollout_time
@@ -561,16 +606,21 @@ def train(cfg: DictConfig, out_dir: str | None = None, job_name: str | None = No
                 online_dataset.add_data(eval_info["episodes"])
 
                 # Update the concatenated dataset length used during sampling.
-                concat_dataset.cumulative_sizes = concat_dataset.cumsum(concat_dataset.datasets)
+                concat_dataset.cumulative_sizes = concat_dataset.cumsum(
+                    concat_dataset.datasets
+                )
 
                 # Update the sampling weights.
                 sampler.weights = compute_sampler_weights(
                     offline_dataset,
-                    offline_drop_n_last_frames=cfg.training.get("drop_n_last_frames", 0),
+                    offline_drop_n_last_frames=cfg.training.get(
+                        "drop_n_last_frames", 0
+                    ),
                     online_dataset=online_dataset,
                     # +1 because online rollouts return an extra frame for the "final observation". Note: we don't have
                     # this final observation in the offline datasets, but we might add them in future.
-                    online_drop_n_last_frames=cfg.training.get("drop_n_last_frames", 0) + 1,
+                    online_drop_n_last_frames=cfg.training.get("drop_n_last_frames", 0)
+                    + 1,
                     online_sampling_ratio=cfg.training.online_sampling_ratio,
                 )
                 sampler.num_samples = len(concat_dataset)
@@ -623,7 +673,9 @@ def train(cfg: DictConfig, out_dir: str | None = None, job_name: str | None = No
                 train_info["online_buffer_size"] = len(online_dataset)
 
             if step % cfg.training.log_freq == 0:
-                log_train_info(logger, train_info, step, cfg, online_dataset, is_online=True)
+                log_train_info(
+                    logger, train_info, step, cfg, online_dataset, is_online=True
+                )
 
             # Note: evaluate_and_checkpoint_if_needed happens **after** the `step`th training update has completed,
             # so we pass in step + 1.
@@ -656,7 +708,9 @@ def train_cli(cfg: dict):
     )
 
 
-def train_notebook(out_dir=None, job_name=None, config_name="default", config_path="../configs"):
+def train_notebook(
+    out_dir=None, job_name=None, config_name="default", config_path="../configs"
+):
     from hydra import compose, initialize
 
     hydra.core.global_hydra.GlobalHydra.instance().clear()

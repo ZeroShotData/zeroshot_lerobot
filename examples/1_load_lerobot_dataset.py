@@ -17,9 +17,8 @@ from pathlib import Path
 from pprint import pprint
 
 import imageio
-import torch
-
 import lerobot
+import torch
 from lerobot.common.datasets.lerobot_dataset import LeRobotDataset
 
 print("List of available datasets:")
@@ -37,7 +36,9 @@ print(dataset)
 print(dataset.hf_dataset)
 
 # And provides additional utilities for robotics and compatibility with Pytorch
-print(f"\naverage number of frames per episode: {dataset.num_samples / dataset.num_episodes:.3f}")
+print(
+    f"\naverage number of frames per episode: {dataset.num_samples / dataset.num_episodes:.3f}"
+)
 print(f"frames per second used during data collection: {dataset.fps=}")
 print(f"keys to access images from cameras: {dataset.camera_keys=}\n")
 
@@ -58,7 +59,9 @@ frames = [frame.permute((1, 2, 0)).numpy() for frame in frames]
 
 # Finally, we save the frames to a mp4 video for visualization.
 Path("outputs/examples/1_load_lerobot_dataset").mkdir(parents=True, exist_ok=True)
-imageio.mimsave("outputs/examples/1_load_lerobot_dataset/episode_0.mp4", frames, fps=dataset.fps)
+imageio.mimsave(
+    "outputs/examples/1_load_lerobot_dataset/episode_0.mp4", frames, fps=dataset.fps
+)
 
 # For many machine learning applications we need to load the history of past observations or trajectories of
 # future actions. Our datasets can load previous and future frames for each key/modality, using timestamps

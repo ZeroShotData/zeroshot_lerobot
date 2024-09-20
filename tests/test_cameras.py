@@ -9,10 +9,12 @@ pytest -sx tests/test_cameras.py::test_camera
 
 import numpy as np
 import pytest
-
 from lerobot import available_robots
-from lerobot.common.robot_devices.cameras.opencv import OpenCVCamera, save_images_from_cameras
-from lerobot.common.robot_devices.utils import RobotDeviceAlreadyConnectedError, RobotDeviceNotConnectedError
+from lerobot.common.robot_devices.cameras.opencv import (
+    OpenCVCamera, save_images_from_cameras)
+from lerobot.common.robot_devices.utils import (
+    RobotDeviceAlreadyConnectedError, RobotDeviceNotConnectedError)
+
 from tests.utils import require_robot
 
 CAMERA_INDEX = 2
@@ -82,7 +84,9 @@ def test_camera(request, robot_type):
         "max_pixel_difference between read() and async_read()",
         compute_max_pixel_difference(color_image, async_color_image),
     )
-    assert np.allclose(color_image, async_color_image, rtol=1e-5, atol=MAX_PIXEL_DIFFERENCE)
+    assert np.allclose(
+        color_image, async_color_image, rtol=1e-5, atol=MAX_PIXEL_DIFFERENCE
+    )
 
     # Test disconnecting
     camera.disconnect()
@@ -99,7 +103,12 @@ def test_camera(request, robot_type):
     camera.connect()
     assert camera.color_mode == "bgr"
     bgr_color_image = camera.read()
-    assert np.allclose(color_image, bgr_color_image[:, :, [2, 1, 0]], rtol=1e-5, atol=MAX_PIXEL_DIFFERENCE)
+    assert np.allclose(
+        color_image,
+        bgr_color_image[:, :, [2, 1, 0]],
+        rtol=1e-5,
+        atol=MAX_PIXEL_DIFFERENCE,
+    )
     del camera
 
     # TODO(rcadene): Add a test for a camera that doesnt support fps=60 and raises an OSError

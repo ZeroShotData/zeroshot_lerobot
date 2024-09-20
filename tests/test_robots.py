@@ -11,12 +11,14 @@ from pathlib import Path
 
 import pytest
 import torch
-
 from lerobot import available_robots
-from lerobot.common.robot_devices.robots.factory import make_robot as make_robot_from_cfg
+from lerobot.common.robot_devices.robots.factory import \
+    make_robot as make_robot_from_cfg
 from lerobot.common.robot_devices.robots.utils import Robot
-from lerobot.common.robot_devices.utils import RobotDeviceAlreadyConnectedError, RobotDeviceNotConnectedError
+from lerobot.common.robot_devices.utils import (
+    RobotDeviceAlreadyConnectedError, RobotDeviceNotConnectedError)
 from lerobot.common.utils.utils import init_hydra_config
+
 from tests.utils import ROBOT_CONFIG_PATH_TEMPLATE, require_robot
 
 
@@ -33,7 +35,8 @@ def test_robot(tmpdir, request, robot_type):
     # TODO(rcadene): measure fps in nightly?
     # TODO(rcadene): test logs
     # TODO(rcadene): add compatibility with other robots
-    from lerobot.common.robot_devices.robots.manipulator import ManipulatorRobot
+    from lerobot.common.robot_devices.robots.manipulator import \
+        ManipulatorRobot
 
     # Save calibration preset
     tmpdir = Path(tmpdir)
@@ -85,7 +88,9 @@ def test_robot(tmpdir, request, robot_type):
     assert "observation.state" in observation
     assert isinstance(observation["observation.state"], torch.Tensor)
     assert observation["observation.state"].ndim == 1
-    dim_state = sum(len(robot.follower_arms[name].motors) for name in robot.follower_arms)
+    dim_state = sum(
+        len(robot.follower_arms[name].motors) for name in robot.follower_arms
+    )
     assert observation["observation.state"].shape[0] == dim_state
     # Cameras
     for name in robot.cameras:
@@ -96,7 +101,9 @@ def test_robot(tmpdir, request, robot_type):
     assert "action" in action
     assert isinstance(action["action"], torch.Tensor)
     assert action["action"].ndim == 1
-    dim_action = sum(len(robot.follower_arms[name].motors) for name in robot.follower_arms)
+    dim_action = sum(
+        len(robot.follower_arms[name].motors) for name in robot.follower_arms
+    )
     assert action["action"].shape[0] == dim_action
     # TODO(rcadene): test if observation and action data are returned as expected
 

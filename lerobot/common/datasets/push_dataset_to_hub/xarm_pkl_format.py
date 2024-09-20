@@ -23,24 +23,21 @@ import einops
 import torch
 import tqdm
 from datasets import Dataset, Features, Image, Sequence, Value
-from PIL import Image as PILImage
-
 from lerobot.common.datasets.lerobot_dataset import CODEBASE_VERSION
 from lerobot.common.datasets.push_dataset_to_hub.utils import (
-    concatenate_episodes,
-    get_default_encoding,
-    save_images_concurrently,
-)
-from lerobot.common.datasets.utils import (
-    calculate_episode_data_index,
-    hf_transform_to_torch,
-)
+    concatenate_episodes, get_default_encoding, save_images_concurrently)
+from lerobot.common.datasets.utils import (calculate_episode_data_index,
+                                           hf_transform_to_torch)
 from lerobot.common.datasets.video_utils import VideoFrame, encode_video_frames
+from PIL import Image as PILImage
 
 
 def check_format(raw_dir):
     keys = {"actions", "rewards", "dones"}
-    nested_keys = {"observations": {"rgb", "state"}, "next_observations": {"rgb", "state"}}
+    nested_keys = {
+        "observations": {"rgb", "state"},
+        "next_observations": {"rgb", "state"},
+    }
 
     xarm_files = list(raw_dir.glob("*.pkl"))
     assert len(xarm_files) > 0
@@ -53,11 +50,17 @@ def check_format(raw_dir):
 
     # Check for consistent lengths in nested keys
     expected_len = len(dataset_dict["actions"])
-    assert all(len(dataset_dict[key]) == expected_len for key in keys if key in dataset_dict)
+    assert all(
+        len(dataset_dict[key]) == expected_len for key in keys if key in dataset_dict
+    )
 
     for key, subkeys in nested_keys.items():
         nested_dict = dataset_dict.get(key, {})
-        assert all(len(nested_dict[subkey]) == expected_len for subkey in subkeys if subkey in nested_dict)
+        assert all(
+            len(nested_dict[subkey]) == expected_len
+            for subkey in subkeys
+            if subkey in nested_dict
+        )
 
 
 def load_from_raw(
@@ -122,13 +125,18 @@ def load_from_raw(
             shutil.rmtree(tmp_imgs_dir)
 
             # store the reference to the video frame
-            ep_dict[img_key] = [{"path": f"videos/{fname}", "timestamp": i / fps} for i in range(num_frames)]
+            ep_dict[img_key] = [
+                {"path": f"videos/{fname}", "timestamp": i / fps}
+                for i in range(num_frames)
+            ]
         else:
             ep_dict[img_key] = [PILImage.fromarray(x) for x in imgs_array]
 
         ep_dict["observation.state"] = state
         ep_dict["action"] = action
-        ep_dict["episode_index"] = torch.tensor([ep_idx] * num_frames, dtype=torch.int64)
+        ep_dict["episode_index"] = torch.tensor(
+            [ep_idx] * num_frames, dtype=torch.int64
+        )
         ep_dict["frame_index"] = torch.arange(0, num_frames, 1)
         ep_dict["timestamp"] = torch.arange(0, num_frames, 1) / fps
         # ep_dict["next.observation.image"] = next_image
@@ -153,7 +161,8 @@ def to_hf_dataset(data_dict, video):
         features["observation.image"] = Image()
 
     features["observation.state"] = Sequence(
-        length=data_dict["observation.state"].shape[1], feature=Value(dtype="float32", id=None)
+        length=data_dict["observation.state"].shape[1],
+        feature=Value(dtype="float32", id=None),
     )
     features["action"] = Sequence(
         length=data_dict["action"].shape[1], feature=Value(dtype="float32", id=None)

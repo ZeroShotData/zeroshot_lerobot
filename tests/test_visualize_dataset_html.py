@@ -17,7 +17,6 @@
 from pathlib import Path
 
 import pytest
-
 from lerobot.scripts.visualize_dataset_html import visualize_dataset_html
 
 

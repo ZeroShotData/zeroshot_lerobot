@@ -14,12 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from datasets import Dataset
-
 from lerobot.common.datasets.sampler import EpisodeAwareSampler
-from lerobot.common.datasets.utils import (
-    calculate_episode_data_index,
-    hf_transform_to_torch,
-)
+from lerobot.common.datasets.utils import (calculate_episode_data_index,
+                                           hf_transform_to_torch)
 
 
 def test_drop_n_first_frames():

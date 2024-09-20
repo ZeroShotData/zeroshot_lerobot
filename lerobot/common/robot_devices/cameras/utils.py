@@ -33,7 +33,9 @@ def save_depth_image(depth, path, write_shape=False):
     path.parent.mkdir(parents=True, exist_ok=True)
 
     # Apply colormap on depth image (image must be converted to 8-bit per pixel first)
-    depth_image = cv2.applyColorMap(cv2.convertScaleAbs(depth, alpha=0.03), cv2.COLORMAP_JET)
+    depth_image = cv2.applyColorMap(
+        cv2.convertScaleAbs(depth, alpha=0.03), cv2.COLORMAP_JET
+    )
 
     if write_shape:
         write_shape_on_image_inplace(depth_image)
@@ -52,7 +54,14 @@ def convert_torch_image_to_cv2(tensor, rgb_to_bgr=True):
 
 # Defines a camera type
 class Camera(Protocol):
-    def connect(self): ...
-    def read(self, temporary_color: str | None = None) -> np.ndarray: ...
-    def async_read(self) -> np.ndarray: ...
-    def disconnect(self): ...
+    def connect(self):
+        ...
+
+    def read(self, temporary_color: str | None = None) -> np.ndarray:
+        ...
+
+    def async_read(self) -> np.ndarray:
+        ...
+
+    def disconnect(self):
+        ...

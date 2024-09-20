@@ -51,29 +51,38 @@ from typing import Any
 
 import torch
 from huggingface_hub import HfApi
-from safetensors.torch import save_file
-
 from lerobot.common.datasets.compute_stats import compute_stats
-from lerobot.common.datasets.lerobot_dataset import CODEBASE_VERSION, LeRobotDataset
+from lerobot.common.datasets.lerobot_dataset import (CODEBASE_VERSION,
+                                                     LeRobotDataset)
 from lerobot.common.datasets.push_dataset_to_hub.utils import check_repo_id
-from lerobot.common.datasets.utils import create_branch, create_lerobot_dataset_card, flatten_dict
+from lerobot.common.datasets.utils import (create_branch,
+                                           create_lerobot_dataset_card,
+                                           flatten_dict)
+from safetensors.torch import save_file
 
 
 def get_from_raw_to_lerobot_format_fn(raw_format: str):
     if raw_format == "pusht_zarr":
-        from lerobot.common.datasets.push_dataset_to_hub.pusht_zarr_format import from_raw_to_lerobot_format
+        from lerobot.common.datasets.push_dataset_to_hub.pusht_zarr_format import \
+            from_raw_to_lerobot_format
     elif raw_format == "umi_zarr":
-        from lerobot.common.datasets.push_dataset_to_hub.umi_zarr_format import from_raw_to_lerobot_format
+        from lerobot.common.datasets.push_dataset_to_hub.umi_zarr_format import \
+            from_raw_to_lerobot_format
     elif raw_format == "aloha_hdf5":
-        from lerobot.common.datasets.push_dataset_to_hub.aloha_hdf5_format import from_raw_to_lerobot_format
+        from lerobot.common.datasets.push_dataset_to_hub.aloha_hdf5_format import \
+            from_raw_to_lerobot_format
     elif "openx_rlds" in raw_format:
-        from lerobot.common.datasets.push_dataset_to_hub.openx_rlds_format import from_raw_to_lerobot_format
+        from lerobot.common.datasets.push_dataset_to_hub.openx_rlds_format import \
+            from_raw_to_lerobot_format
     elif raw_format == "dora_parquet":
-        from lerobot.common.datasets.push_dataset_to_hub.dora_parquet_format import from_raw_to_lerobot_format
+        from lerobot.common.datasets.push_dataset_to_hub.dora_parquet_format import \
+            from_raw_to_lerobot_format
     elif raw_format == "xarm_pkl":
-        from lerobot.common.datasets.push_dataset_to_hub.xarm_pkl_format import from_raw_to_lerobot_format
+        from lerobot.common.datasets.push_dataset_to_hub.xarm_pkl_format import \
+            from_raw_to_lerobot_format
     elif raw_format == "cam_png":
-        from lerobot.common.datasets.push_dataset_to_hub.cam_png_format import from_raw_to_lerobot_format
+        from lerobot.common.datasets.push_dataset_to_hub.cam_png_format import \
+            from_raw_to_lerobot_format
     else:
         raise ValueError(
             f"The selected {raw_format} can't be found. Did you add it to `lerobot/scripts/push_dataset_to_hub.py::get_from_raw_to_lerobot_format_fn`?"
@@ -83,7 +92,10 @@ def get_from_raw_to_lerobot_format_fn(raw_format: str):
 
 
 def save_meta_data(
-    info: dict[str, Any], stats: dict, episode_data_index: dict[str, list], meta_data_dir: Path
+    info: dict[str, Any],
+    stats: dict,
+    episode_data_index: dict[str, list],
+    meta_data_dir: Path,
 ):
     meta_data_dir.mkdir(parents=True, exist_ok=True)
 
@@ -97,12 +109,16 @@ def save_meta_data(
     save_file(flatten_dict(stats), stats_path)
 
     # save episode_data_index
-    episode_data_index = {key: torch.tensor(episode_data_index[key]) for key in episode_data_index}
+    episode_data_index = {
+        key: torch.tensor(episode_data_index[key]) for key in episode_data_index
+    }
     ep_data_idx_path = meta_data_dir / "episode_data_index.safetensors"
     save_file(episode_data_index, ep_data_idx_path)
 
 
-def push_meta_data_to_hub(repo_id: str, meta_data_dir: str | Path, revision: str | None):
+def push_meta_data_to_hub(
+    repo_id: str, meta_data_dir: str | Path, revision: str | None
+):
     """Expect all meta data files to be all stored in a single "meta_data" directory.
     On the hugging face repositery, they will be uploaded in a "meta_data" directory at the root.
     """
@@ -117,7 +133,10 @@ def push_meta_data_to_hub(repo_id: str, meta_data_dir: str | Path, revision: str
 
 
 def push_dataset_card_to_hub(
-    repo_id: str, revision: str | None, tags: list | None = None, text: str | None = None
+    repo_id: str,
+    revision: str | None,
+    tags: list | None = None,
+    text: str | None = None,
 ):
     """Creates and pushes a LeRobotDataset Card with appropriate tags to easily find it on the hub."""
     card = create_lerobot_dataset_card(tags=tags, text=text)
@@ -183,7 +202,9 @@ def push_dataset_to_hub(
             if force_override:
                 shutil.rmtree(local_dir)
             elif not resume:
-                raise ValueError(f"`local_dir` already exists ({local_dir}). Use `--force-override 1`.")
+                raise ValueError(
+                    f"`local_dir` already exists ({local_dir}). Use `--force-override 1`."
+                )
 
         meta_data_dir = local_dir / "meta_data"
         videos_dir = local_dir / "videos"
@@ -214,7 +235,9 @@ def push_dataset_to_hub(
         # For instance, `raw_format="oxe_rlds"` uses the default formating (TODO what does that mean?),
         # and `raw_format="oxe_rlds.bridge_orig"` uses the brdige_orig formating
         _, openx_dataset_name = raw_format.split(".")
-        print(f"Converting dataset [{openx_dataset_name}] from 'openx_rlds' to LeRobot format.")
+        print(
+            f"Converting dataset [{openx_dataset_name}] from 'openx_rlds' to LeRobot format."
+        )
         fmt_kwgs["openx_dataset_name"] = openx_dataset_name
 
     hf_dataset, episode_data_index, info = from_raw_to_lerobot_format(**fmt_kwgs)
@@ -229,7 +252,9 @@ def push_dataset_to_hub(
     stats = compute_stats(lerobot_dataset, batch_size, num_workers)
 
     if local_dir:
-        hf_dataset = hf_dataset.with_format(None)  # to remove transforms that cant be saved
+        hf_dataset = hf_dataset.with_format(
+            None
+        )  # to remove transforms that cant be saved
         hf_dataset.save_to_disk(str(local_dir / "train"))
 
     if push_to_hub or local_dir:

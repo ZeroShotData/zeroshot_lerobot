@@ -53,7 +53,11 @@ def binarize_gripper_actions(actions: tf.Tensor) -> tf.Tensor:
     is_open_float = tf.cast(open_mask, tf.float32)
 
     def scan_fn(carry, i):
-        return tf.cond(in_between_mask[i], lambda: tf.cast(carry, tf.float32), lambda: is_open_float[i])
+        return tf.cond(
+            in_between_mask[i],
+            lambda: tf.cast(carry, tf.float32),
+            lambda: is_open_float[i],
+        )
 
     return tf.scan(scan_fn, tf.range(tf.shape(actions)[0]), actions[-1], reverse=True)
 
@@ -73,7 +77,9 @@ def rel2abs_gripper_actions(actions: tf.Tensor) -> tf.Tensor:
     thresholded_actions = tf.where(opening_mask, 1, tf.where(closing_mask, -1, 0))
 
     def scan_fn(carry, i):
-        return tf.cond(thresholded_actions[i] == 0, lambda: carry, lambda: thresholded_actions[i])
+        return tf.cond(
+            thresholded_actions[i] == 0, lambda: carry, lambda: thresholded_actions[i]
+        )
 
     # If no relative grasp, assumes open for whole trajectory
     start = -1 * thresholded_actions[tf.argmax(thresholded_actions != 0, axis=0)]
@@ -89,18 +95,32 @@ def rel2abs_gripper_actions(actions: tf.Tensor) -> tf.Tensor:
 # === Bridge-V2 =>> Dataset-Specific Transform ===
 def relabel_bridge_actions(traj: Dict[str, Any]) -> Dict[str, Any]:
     """Relabels actions to use reached proprioceptive state; discards last timestep (no-action)."""
-    movement_actions = traj["observation"]["state"][1:, :6] - traj["observation"]["state"][:-1, :6]
+    movement_actions = (
+        traj["observation"]["state"][1:, :6] - traj["observation"]["state"][:-1, :6]
+    )
     traj_truncated = tf.nest.map_structure(lambda x: x[:-1], traj)
-    traj_truncated["action"] = tf.concat([movement_actions, traj["action"][:-1, -1:]], axis=1)
+    traj_truncated["action"] = tf.concat(
+        [movement_actions, traj["action"][:-1, -1:]], axis=1
+    )
 
     return traj_truncated
 
 
 # === RLDS Dataset Initialization Utilities ===
-def pprint_data_mixture(dataset_kwargs_list: List[Dict[str, Any]], dataset_weights: List[int]) -> None:
-    print("\n######################################################################################")
-    print(f"# Loading the following {len(dataset_kwargs_list)} datasets (incl. sampling weight):{'': >24} #")
-    for dataset_kwargs, weight in zip(dataset_kwargs_list, dataset_weights, strict=False):
+def pprint_data_mixture(
+    dataset_kwargs_list: List[Dict[str, Any]], dataset_weights: List[int]
+) -> None:
+    print(
+        "\n######################################################################################"
+    )
+    print(
+        f"# Loading the following {len(dataset_kwargs_list)} datasets (incl. sampling weight):{'': >24} #"
+    )
+    for dataset_kwargs, weight in zip(
+        dataset_kwargs_list, dataset_weights, strict=False
+    ):
         pad = 80 - len(dataset_kwargs["name"])
         print(f"# {dataset_kwargs['name']}: {weight:=>{pad}f} #")
-    print("######################################################################################\n")
+    print(
+        "######################################################################################\n"
+    )

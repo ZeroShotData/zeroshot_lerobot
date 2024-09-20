@@ -6,9 +6,8 @@ transforms are applied to the observation images before they are returned in the
 
 from pathlib import Path
 
-from torchvision.transforms import ToPILImage, v2
-
 from lerobot.common.datasets.lerobot_dataset import LeRobotDataset
+from torchvision.transforms import ToPILImage, v2
 
 dataset_repo_id = "lerobot/aloha_static_tape"
 

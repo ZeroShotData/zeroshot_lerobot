@@ -37,20 +37,15 @@ import torch
 import tqdm
 import yaml
 from datasets import Dataset, Features, Image, Sequence, Value
-from PIL import Image as PILImage
-
 from lerobot.common.datasets.lerobot_dataset import CODEBASE_VERSION
-from lerobot.common.datasets.push_dataset_to_hub.openx.transforms import OPENX_STANDARDIZATION_TRANSFORMS
+from lerobot.common.datasets.push_dataset_to_hub.openx.transforms import \
+    OPENX_STANDARDIZATION_TRANSFORMS
 from lerobot.common.datasets.push_dataset_to_hub.utils import (
-    concatenate_episodes,
-    get_default_encoding,
-    save_images_concurrently,
-)
-from lerobot.common.datasets.utils import (
-    calculate_episode_data_index,
-    hf_transform_to_torch,
-)
+    concatenate_episodes, get_default_encoding, save_images_concurrently)
+from lerobot.common.datasets.utils import (calculate_episode_data_index,
+                                           hf_transform_to_torch)
 from lerobot.common.datasets.video_utils import VideoFrame, encode_video_frames
+from PIL import Image as PILImage
 
 with open("lerobot/common/datasets/push_dataset_to_hub/openx/configs.yaml") as f:
     _openx_list = yaml.safe_load(f)
@@ -147,7 +142,11 @@ def load_from_raw(
         obs_keys = dataset_info.features["steps"]["observation"].keys()
         image_keys = [key for key in obs_keys if "image" in key]
 
-    lang_key = "language_instruction" if "language_instruction" in dataset.element_spec else None
+    lang_key = (
+        "language_instruction"
+        if "language_instruction" in dataset.element_spec
+        else None
+    )
 
     print(" - image_keys: ", image_keys)
     print(" - lang_key: ", lang_key)
@@ -257,7 +256,8 @@ def load_from_raw(
 
                 # store the reference to the video frame
                 ep_dict[img_key] = [
-                    {"path": f"videos/{fname}", "timestamp": i / fps} for i in range(num_frames)
+                    {"path": f"videos/{fname}", "timestamp": i / fps}
+                    for i in range(num_frames)
                 ]
             else:
                 ep_dict[img_key] = [PILImage.fromarray(x) for x in imgs_array]
@@ -298,15 +298,18 @@ def to_hf_dataset(data_dict, video) -> Dataset:
             features[key] = Image()
 
     features["observation.state"] = Sequence(
-        length=data_dict["observation.state"].shape[1], feature=Value(dtype="float32", id=None)
+        length=data_dict["observation.state"].shape[1],
+        feature=Value(dtype="float32", id=None),
     )
     if "observation.velocity" in data_dict:
         features["observation.velocity"] = Sequence(
-            length=data_dict["observation.velocity"].shape[1], feature=Value(dtype="float32", id=None)
+            length=data_dict["observation.velocity"].shape[1],
+            feature=Value(dtype="float32", id=None),
         )
     if "observation.effort" in data_dict:
         features["observation.effort"] = Sequence(
-            length=data_dict["observation.effort"].shape[1], feature=Value(dtype="float32", id=None)
+            length=data_dict["observation.effort"].shape[1],
+            feature=Value(dtype="float32", id=None),
         )
     if "language_instruction" in data_dict:
         features["language_instruction"] = Value(dtype="string", id=None)
@@ -341,11 +344,14 @@ def from_raw_to_lerobot_format(
         fps = 30
     elif "fps" not in OPENX_DATASET_CONFIGS[openx_dataset_name]:
         raise ValueError(
-            "fps for this dataset is not specified in openx/configs.py yet," "means it is not yet tested"
+            "fps for this dataset is not specified in openx/configs.py yet,"
+            "means it is not yet tested"
         )
     fps = OPENX_DATASET_CONFIGS[openx_dataset_name]["fps"]
 
-    data_dict = load_from_raw(raw_dir, videos_dir, fps, video, episodes, encoding, openx_dataset_name)
+    data_dict = load_from_raw(
+        raw_dir, videos_dir, fps, video, episodes, encoding, openx_dataset_name
+    )
     hf_dataset = to_hf_dataset(data_dict, video)
     episode_data_index = calculate_episode_data_index(hf_dataset)
     info = {

@@ -13,9 +13,9 @@ from pathlib import Path
 
 import torch
 from huggingface_hub import snapshot_download
-
 from lerobot.common.datasets.lerobot_dataset import LeRobotDataset
-from lerobot.common.policies.diffusion.modeling_diffusion import DiffusionPolicy
+from lerobot.common.policies.diffusion.modeling_diffusion import \
+    DiffusionPolicy
 
 device = torch.device("cuda")
 
@@ -37,7 +37,24 @@ delta_timestamps = {
     # Load the previous action (-0.1), the next action to be executed (0.0),
     # and 14 future actions with a 0.1 seconds spacing. All these actions will be
     # used to calculate the loss.
-    "action": [-0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4],
+    "action": [
+        -0.1,
+        0.0,
+        0.1,
+        0.2,
+        0.3,
+        0.4,
+        0.5,
+        0.6,
+        0.7,
+        0.8,
+        0.9,
+        1.0,
+        1.1,
+        1.2,
+        1.3,
+        1.4,
+    ],
 }
 
 # Load the last 10% of episodes of the dataset as a validation set.
@@ -50,16 +67,22 @@ print(f"Number of episodes in full dataset: {full_dataset.num_episodes}")
 print(f"Number of episodes in training dataset (90% subset): {num_train_episodes}")
 print(f"Number of episodes in validation dataset (10% subset): {num_val_episodes}")
 # - Get first frame index of the validation set
-first_val_frame_index = full_dataset.episode_data_index["from"][num_train_episodes].item()
+first_val_frame_index = full_dataset.episode_data_index["from"][
+    num_train_episodes
+].item()
 # - Load frames subset belonging to validation set using the `split` argument.
 #   It utilizes the `datasets` library's syntax for slicing datasets.
 #   For more information on the Slice API, please see:
 #   https://huggingface.co/docs/datasets/v2.19.0/loading#slice-splits
 train_dataset = LeRobotDataset(
-    "lerobot/pusht", split=f"train[:{first_val_frame_index}]", delta_timestamps=delta_timestamps
+    "lerobot/pusht",
+    split=f"train[:{first_val_frame_index}]",
+    delta_timestamps=delta_timestamps,
 )
 val_dataset = LeRobotDataset(
-    "lerobot/pusht", split=f"train[{first_val_frame_index}:]", delta_timestamps=delta_timestamps
+    "lerobot/pusht",
+    split=f"train[{first_val_frame_index}:]",
+    delta_timestamps=delta_timestamps,
 )
 print(f"Number of frames in training dataset (90% subset): {len(train_dataset)}")
 print(f"Number of frames in validation dataset (10% subset): {len(val_dataset)}")

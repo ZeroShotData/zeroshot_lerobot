@@ -8,24 +8,19 @@ from typing import Sequence
 
 import numpy as np
 import torch
-
 from lerobot.common.robot_devices.cameras.utils import Camera
 from lerobot.common.robot_devices.motors.dynamixel import (
-    CalibrationMode,
-    TorqueMode,
-    convert_degrees_to_steps,
-)
+    CalibrationMode, TorqueMode, convert_degrees_to_steps)
 from lerobot.common.robot_devices.motors.utils import MotorsBus
 from lerobot.common.robot_devices.robots.utils import get_arm_id
-from lerobot.common.robot_devices.utils import RobotDeviceAlreadyConnectedError, RobotDeviceNotConnectedError
+from lerobot.common.robot_devices.utils import (
+    RobotDeviceAlreadyConnectedError, RobotDeviceNotConnectedError)
 
 ########################################################################
 # Calibration logic
 ########################################################################
 
-URL_TEMPLATE = (
-    "https://raw.githubusercontent.com/huggingface/lerobot/main/media/{robot}/{arm}_{position}.webp"
-)
+URL_TEMPLATE = "https://raw.githubusercontent.com/huggingface/lerobot/main/media/{robot}/{arm}_{position}.webp"
 
 # The following positions are provided in nominal degree range ]-180, +180[
 # For more info on these constants, see comments in the code where they get used.
@@ -36,7 +31,9 @@ ROTATED_POSITION_DEGREE = 90
 def assert_drive_mode(drive_mode):
     # `drive_mode` is in [0,1] with 0 means original rotation direction for the motor, and 1 means inverted.
     if not np.all(np.isin(drive_mode, [0, 1])):
-        raise ValueError(f"`drive_mode` contains values other than 0 or 1: ({drive_mode})")
+        raise ValueError(
+            f"`drive_mode` contains values other than 0 or 1: ({drive_mode})"
+        )
 
 
 def apply_drive_mode(position, drive_mode):
@@ -77,12 +74,16 @@ def run_arm_calibration(arm: MotorsBus, robot_type: str, arm_name: str, arm_type
     ```
     """
     if (arm.read("Torque_Enable") != TorqueMode.DISABLED.value).any():
-        raise ValueError("To run calibration, the torque must be disabled on all motors.")
+        raise ValueError(
+            "To run calibration, the torque must be disabled on all motors."
+        )
 
     print(f"\nRunning calibration of {robot_type} {arm_name} {arm_type}...")
 
     print("\nMove arm to zero position")
-    print("See: " + URL_TEMPLATE.format(robot=robot_type, arm=arm_type, position="zero"))
+    print(
+        "See: " + URL_TEMPLATE.format(robot=robot_type, arm=arm_type, position="zero")
+    )
     input("Press Enter to continue...")
 
     # We arbitrarily chose our zero target position to be a straight horizontal position with gripper upwards and closed.
@@ -103,10 +104,15 @@ def run_arm_calibration(arm: MotorsBus, robot_type: str, arm_name: str, arm_type
     # corresponds to opening the gripper. When the rotation direction is ambiguous, we arbitrarely rotate clockwise from the point of view
     # of the previous motor in the kinetic chain.
     print("\nMove arm to rotated target position")
-    print("See: " + URL_TEMPLATE.format(robot=robot_type, arm=arm_type, position="rotated"))
+    print(
+        "See: "
+        + URL_TEMPLATE.format(robot=robot_type, arm=arm_type, position="rotated")
+    )
     input("Press Enter to continue...")
 
-    rotated_target_pos = convert_degrees_to_steps(ROTATED_POSITION_DEGREE, arm.motor_models)
+    rotated_target_pos = convert_degrees_to_steps(
+        ROTATED_POSITION_DEGREE, arm.motor_models
+    )
 
     # Find drive mode by rotating each motor by a quarter of a turn.
     # Drive mode indicates if the motor rotation direction should be inverted (=1) or not (=0).
@@ -115,11 +121,15 @@ def run_arm_calibration(arm: MotorsBus, robot_type: str, arm_name: str, arm_type
 
     # Re-compute homing offset to take into account drive mode
     rotated_drived_pos = apply_drive_mode(rotated_pos, drive_mode)
-    rotated_nearest_pos = compute_nearest_rounded_position(rotated_drived_pos, arm.motor_models)
+    rotated_nearest_pos = compute_nearest_rounded_position(
+        rotated_drived_pos, arm.motor_models
+    )
     homing_offset = rotated_target_pos - rotated_nearest_pos
 
     print("\nMove arm to rest position")
-    print("See: " + URL_TEMPLATE.format(robot=robot_type, arm=arm_type, position="rest"))
+    print(
+        "See: " + URL_TEMPLATE.format(robot=robot_type, arm=arm_type, position="rest")
+    )
     input("Press Enter to continue...")
     print()
 
@@ -144,7 +154,9 @@ def run_arm_calibration(arm: MotorsBus, robot_type: str, arm_name: str, arm_type
 
 
 def ensure_safe_goal_position(
-    goal_pos: torch.Tensor, present_pos: torch.Tensor, max_relative_target: float | list[float]
+    goal_pos: torch.Tensor,
+    present_pos: torch.Tensor,
+    max_relative_target: float | list[float],
 ):
     # Cap relative action target magnitude for safety.
     diff = goal_pos - present_pos
@@ -195,7 +207,11 @@ class ManipulatorRobotConfig:
     gripper_open_degree: float | None = None
 
     def __setattr__(self, prop: str, val):
-        if prop == "max_relative_target" and val is not None and isinstance(val, Sequence):
+        if (
+            prop == "max_relative_target"
+            and val is not None
+            and isinstance(val, Sequence)
+        ):
             for name in self.follower_arms:
                 if len(self.follower_arms[name].motors) != len(val):
                     raise ValueError(
@@ -382,7 +398,9 @@ class ManipulatorRobot:
         elif self.robot_type == "aloha":
             self.set_aloha_robot_preset()
         else:
-            warnings.warn(f"No preset found for robot type: {self.robot_type}", stacklevel=1)
+            warnings.warn(
+                f"No preset found for robot type: {self.robot_type}", stacklevel=1
+            )
 
         # Enable torque on all motors of the follower arms
         for name in self.follower_arms:
@@ -394,7 +412,9 @@ class ManipulatorRobot:
             # to squeeze the gripper and have it spring back to an open position on its own.
             for name in self.leader_arms:
                 self.leader_arms[name].write("Torque_Enable", 1, "gripper")
-                self.leader_arms[name].write("Goal_Position", self.config.gripper_open_degree, "gripper")
+                self.leader_arms[name].write(
+                    "Goal_Position", self.config.gripper_open_degree, "gripper"
+                )
 
         # Connect the cameras
         for name in self.cameras:
@@ -419,7 +439,9 @@ class ManipulatorRobot:
                 print(f"Missing calibration file '{arm_calib_path}'")
                 calibration = run_arm_calibration(arm, self.robot_type, name, arm_type)
 
-                print(f"Calibration is done! Saving calibration file '{arm_calib_path}'")
+                print(
+                    f"Calibration is done! Saving calibration file '{arm_calib_path}'"
+                )
                 arm_calib_path.parent.mkdir(parents=True, exist_ok=True)
                 with open(arm_calib_path, "w") as f:
                     json.dump(calibration, f)
@@ -436,13 +458,17 @@ class ManipulatorRobot:
     def set_koch_robot_preset(self):
         def set_operating_mode_(arm):
             if (arm.read("Torque_Enable") != TorqueMode.DISABLED.value).any():
-                raise ValueError("To run set robot preset, the torque must be disabled on all motors.")
+                raise ValueError(
+                    "To run set robot preset, the torque must be disabled on all motors."
+                )
 
             # Use 'extended position mode' for all motors except gripper, because in joint mode the servos can't
             # rotate more than 360 degrees (from 0 to 4095) And some mistake can happen while assembling the arm,
             # you could end up with a servo with a position 0 or 4095 at a crucial point See [
             # https://emanual.robotis.com/docs/en/dxl/x/x_series/#operating-mode11]
-            all_motors_except_gripper = [name for name in arm.motor_names if name != "gripper"]
+            all_motors_except_gripper = [
+                name for name in arm.motor_names if name != "gripper"
+            ]
             if len(all_motors_except_gripper) > 0:
                 # 4 corresponds to Extended Position on Koch motors
                 arm.write("Operating_Mode", 4, all_motors_except_gripper)
@@ -471,7 +497,9 @@ class ManipulatorRobot:
                 # Enable torque on the gripper of the leader arms, and move it to 45 degrees,
                 # so that we can use it as a trigger to close the gripper of the follower arms.
                 self.leader_arms[name].write("Torque_Enable", 1, "gripper")
-                self.leader_arms[name].write("Goal_Position", self.config.gripper_open_degree, "gripper")
+                self.leader_arms[name].write(
+                    "Goal_Position", self.config.gripper_open_degree, "gripper"
+                )
 
     def set_aloha_robot_preset(self):
         def set_shadow_(arm):
@@ -501,11 +529,15 @@ class ManipulatorRobot:
             # you could end up with a servo with a position 0 or 4095 at a crucial point See [
             # https://emanual.robotis.com/docs/en/dxl/x/x_series/#operating-mode11]
             all_motors_except_gripper = [
-                name for name in self.follower_arms[name].motor_names if name != "gripper"
+                name
+                for name in self.follower_arms[name].motor_names
+                if name != "gripper"
             ]
             if len(all_motors_except_gripper) > 0:
                 # 4 corresponds to Extended Position on Aloha motors
-                self.follower_arms[name].write("Operating_Mode", 4, all_motors_except_gripper)
+                self.follower_arms[name].write(
+                    "Operating_Mode", 4, all_motors_except_gripper
+                )
 
             # Use 'position control current based' for follower gripper to be limited by the limit of the current.
             # It can grasp an object without forcing too much even tho,
@@ -536,7 +568,9 @@ class ManipulatorRobot:
             before_lread_t = time.perf_counter()
             leader_pos[name] = self.leader_arms[name].read("Present_Position")
             leader_pos[name] = torch.from_numpy(leader_pos[name])
-            self.logs[f"read_leader_{name}_pos_dt_s"] = time.perf_counter() - before_lread_t
+            self.logs[f"read_leader_{name}_pos_dt_s"] = (
+                time.perf_counter() - before_lread_t
+            )
 
         # Send goal position to the follower
         follower_goal_pos = {}
@@ -549,14 +583,18 @@ class ManipulatorRobot:
             if self.config.max_relative_target is not None:
                 present_pos = self.follower_arms[name].read("Present_Position")
                 present_pos = torch.from_numpy(present_pos)
-                goal_pos = ensure_safe_goal_position(goal_pos, present_pos, self.config.max_relative_target)
+                goal_pos = ensure_safe_goal_position(
+                    goal_pos, present_pos, self.config.max_relative_target
+                )
 
             # Used when record_data=True
             follower_goal_pos[name] = goal_pos
 
             goal_pos = goal_pos.numpy().astype(np.int32)
             self.follower_arms[name].write("Goal_Position", goal_pos)
-            self.logs[f"write_follower_{name}_goal_pos_dt_s"] = time.perf_counter() - before_fwrite_t
+            self.logs[f"write_follower_{name}_goal_pos_dt_s"] = (
+                time.perf_counter() - before_fwrite_t
+            )
 
         # Early exit when recording data is not requested
         if not record_data:
@@ -569,7 +607,9 @@ class ManipulatorRobot:
             before_fread_t = time.perf_counter()
             follower_pos[name] = self.follower_arms[name].read("Present_Position")
             follower_pos[name] = torch.from_numpy(follower_pos[name])
-            self.logs[f"read_follower_{name}_pos_dt_s"] = time.perf_counter() - before_fread_t
+            self.logs[f"read_follower_{name}_pos_dt_s"] = (
+                time.perf_counter() - before_fread_t
+            )
 
         # Create state by concatenating follower current position
         state = []
@@ -591,8 +631,12 @@ class ManipulatorRobot:
             before_camread_t = time.perf_counter()
             images[name] = self.cameras[name].async_read()
             images[name] = torch.from_numpy(images[name])
-            self.logs[f"read_camera_{name}_dt_s"] = self.cameras[name].logs["delta_timestamp_s"]
-            self.logs[f"async_read_camera_{name}_dt_s"] = time.perf_counter() - before_camread_t
+            self.logs[f"read_camera_{name}_dt_s"] = self.cameras[name].logs[
+                "delta_timestamp_s"
+            ]
+            self.logs[f"async_read_camera_{name}_dt_s"] = (
+                time.perf_counter() - before_camread_t
+            )
 
         # Populate output dictionnaries
         obs_dict, action_dict = {}, {}
@@ -616,7 +660,9 @@ class ManipulatorRobot:
             before_fread_t = time.perf_counter()
             follower_pos[name] = self.follower_arms[name].read("Present_Position")
             follower_pos[name] = torch.from_numpy(follower_pos[name])
-            self.logs[f"read_follower_{name}_pos_dt_s"] = time.perf_counter() - before_fread_t
+            self.logs[f"read_follower_{name}_pos_dt_s"] = (
+                time.perf_counter() - before_fread_t
+            )
 
         # Create state by concatenating follower current position
         state = []
@@ -631,8 +677,12 @@ class ManipulatorRobot:
             before_camread_t = time.perf_counter()
             images[name] = self.cameras[name].async_read()
             images[name] = torch.from_numpy(images[name])
-            self.logs[f"read_camera_{name}_dt_s"] = self.cameras[name].logs["delta_timestamp_s"]
-            self.logs[f"async_read_camera_{name}_dt_s"] = time.perf_counter() - before_camread_t
+            self.logs[f"read_camera_{name}_dt_s"] = self.cameras[name].logs[
+                "delta_timestamp_s"
+            ]
+            self.logs[f"async_read_camera_{name}_dt_s"] = (
+                time.perf_counter() - before_camread_t
+            )
 
         # Populate output dictionnaries and format to pytorch
         obs_dict = {}
@@ -670,7 +720,9 @@ class ManipulatorRobot:
             if self.config.max_relative_target is not None:
                 present_pos = self.follower_arms[name].read("Present_Position")
                 present_pos = torch.from_numpy(present_pos)
-                goal_pos = ensure_safe_goal_position(goal_pos, present_pos, self.config.max_relative_target)
+                goal_pos = ensure_safe_goal_position(
+                    goal_pos, present_pos, self.config.max_relative_target
+                )
 
             # Save tensor to concat and return
             action_sent.append(goal_pos)

@@ -1,11 +1,12 @@
 from pathlib import Path
 
 import pytest
-
 from lerobot import available_robots
 from lerobot.common.policies.factory import make_policy
 from lerobot.common.utils.utils import init_hydra_config
-from lerobot.scripts.control_robot import calibrate, record, replay, teleoperate
+from lerobot.scripts.control_robot import (calibrate, record, replay,
+                                           teleoperate)
+
 from tests.test_robots import make_robot
 from tests.utils import DEFAULT_CONFIG_PATH, DEVICE, require_robot
 
@@ -35,7 +36,15 @@ def test_record_without_cameras(tmpdir, request, robot_type):
     repo_id = "lerobot/debug"
 
     robot = make_robot(robot_type, overrides=["~cameras"])
-    record(robot, fps=30, root=root, repo_id=repo_id, warmup_time_s=1, episode_time_s=1, num_episodes=2)
+    record(
+        robot,
+        fps=30,
+        root=root,
+        repo_id=repo_id,
+        warmup_time_s=1,
+        episode_time_s=1,
+        num_episodes=2,
+    )
 
 
 @pytest.mark.parametrize("robot_type", available_robots)
@@ -49,7 +58,13 @@ def test_record_and_replay_and_policy(tmpdir, request, robot_type):
 
     robot = make_robot(robot_type)
     dataset = record(
-        robot, fps=30, root=root, repo_id=repo_id, warmup_time_s=1, episode_time_s=1, num_episodes=2
+        robot,
+        fps=30,
+        root=root,
+        repo_id=repo_id,
+        warmup_time_s=1,
+        episode_time_s=1,
+        num_episodes=2,
     )
 
     replay(robot, episode=0, fps=30, root=root, repo_id=repo_id)

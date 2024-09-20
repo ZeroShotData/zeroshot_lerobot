@@ -20,35 +20,40 @@ from itertools import chain
 from pathlib import Path
 
 import einops
+import lerobot
 import pytest
 import torch
 from datasets import Dataset
 from huggingface_hub import HfApi
+from lerobot.common.datasets.compute_stats import (aggregate_stats,
+                                                   compute_stats,
+                                                   get_stats_einops_patterns)
+from lerobot.common.datasets.factory import make_dataset
+from lerobot.common.datasets.lerobot_dataset import (LeRobotDataset,
+                                                     MultiLeRobotDataset)
+from lerobot.common.datasets.utils import (create_branch, flatten_dict,
+                                           hf_transform_to_torch,
+                                           load_previous_and_future_frames,
+                                           unflatten_dict)
+from lerobot.common.utils.utils import init_hydra_config, seeded_context
 from safetensors.torch import load_file
 
-import lerobot
-from lerobot.common.datasets.compute_stats import (
-    aggregate_stats,
-    compute_stats,
-    get_stats_einops_patterns,
-)
-from lerobot.common.datasets.factory import make_dataset
-from lerobot.common.datasets.lerobot_dataset import LeRobotDataset, MultiLeRobotDataset
-from lerobot.common.datasets.utils import (
-    create_branch,
-    flatten_dict,
-    hf_transform_to_torch,
-    load_previous_and_future_frames,
-    unflatten_dict,
-)
-from lerobot.common.utils.utils import init_hydra_config, seeded_context
 from tests.utils import DEFAULT_CONFIG_PATH, DEVICE
 
 
 @pytest.mark.parametrize(
     "env_name, repo_id, policy_name",
     lerobot.env_dataset_policy_triplets
-    + [("aloha", ["lerobot/aloha_sim_insertion_human", "lerobot/aloha_sim_transfer_cube_human"], "act")],
+    + [
+        (
+            "aloha",
+            [
+                "lerobot/aloha_sim_insertion_human",
+                "lerobot/aloha_sim_transfer_cube_human",
+            ],
+            "act",
+        )
+    ],
 )
 def test_factory(env_name, repo_id, policy_name):
     """
@@ -163,7 +168,9 @@ def test_compute_stats_on_xarm():
     # Note: we set the batch size to be smaller than the whole dataset to make sure we are testing batched
     # computation of the statistics. While doing this, we also make sure it works when we don't divide the
     # dataset into even batches.
-    computed_stats = compute_stats(dataset, batch_size=int(len(dataset) * 0.25), num_workers=0)
+    computed_stats = compute_stats(
+        dataset, batch_size=int(len(dataset) * 0.25), num_workers=0
+    )
 
     # get einops patterns to aggregate batches and compute statistics
     stats_patterns = get_stats_einops_patterns(dataset)
@@ -184,7 +191,9 @@ def test_compute_stats_on_xarm():
         expected_stats[k] = {}
         expected_stats[k]["mean"] = einops.reduce(full_batch[k], pattern, "mean")
         expected_stats[k]["std"] = torch.sqrt(
-            einops.reduce((full_batch[k] - expected_stats[k]["mean"]) ** 2, pattern, "mean")
+            einops.reduce(
+                (full_batch[k] - expected_stats[k]["mean"]) ** 2, pattern, "mean"
+            )
         )
         expected_stats[k]["min"] = einops.reduce(full_batch[k], pattern, "min")
         expected_stats[k]["max"] = einops.reduce(full_batch[k], pattern, "max")
@@ -224,9 +233,13 @@ def test_load_previous_and_future_frames_within_tolerance():
     delta_timestamps = {"index": [-0.2, 0, 0.139]}
     tol = 0.04
     item = hf_dataset[2]
-    item = load_previous_and_future_frames(item, hf_dataset, episode_data_index, delta_timestamps, tol)
+    item = load_previous_and_future_frames(
+        item, hf_dataset, episode_data_index, delta_timestamps, tol
+    )
     data, is_pad = item["index"], item["index_is_pad"]
-    assert torch.equal(data, torch.tensor([0, 2, 3])), "Data does not match expected values"
+    assert torch.equal(
+        data, torch.tensor([0, 2, 3])
+    ), "Data does not match expected values"
     assert not is_pad.any(), "Unexpected padding detected"
 
 
@@ -247,7 +260,9 @@ def test_load_previous_and_future_frames_outside_tolerance_inside_episode_range(
     tol = 0.04
     item = hf_dataset[2]
     with pytest.raises(AssertionError):
-        load_previous_and_future_frames(item, hf_dataset, episode_data_index, delta_timestamps, tol)
+        load_previous_and_future_frames(
+            item, hf_dataset, episode_data_index, delta_timestamps, tol
+        )
 
 
 def test_load_previous_and_future_frames_outside_tolerance_outside_episode_range():
@@ -266,9 +281,13 @@ def test_load_previous_and_future_frames_outside_tolerance_outside_episode_range
     delta_timestamps = {"index": [-0.3, -0.24, 0, 0.26, 0.3]}
     tol = 0.04
     item = hf_dataset[2]
-    item = load_previous_and_future_frames(item, hf_dataset, episode_data_index, delta_timestamps, tol)
+    item = load_previous_and_future_frames(
+        item, hf_dataset, episode_data_index, delta_timestamps, tol
+    )
     data, is_pad = item["index"], item["index_is_pad"]
-    assert torch.equal(data, torch.tensor([0, 0, 2, 4, 4])), "Data does not match expected values"
+    assert torch.equal(
+        data, torch.tensor([0, 0, 2, 4, 4])
+    ), "Data does not match expected values"
     assert torch.equal(
         is_pad, torch.tensor([True, False, False, True, True])
     ), "Padding does not match expected values"
@@ -294,7 +313,9 @@ def test_flatten_unflatten_dict():
     d = unflatten_dict(flatten_dict(d))
 
     # test equality between nested dicts
-    assert json.dumps(original_d, sort_keys=True) == json.dumps(d, sort_keys=True), f"{original_d} != {d}"
+    assert json.dumps(original_d, sort_keys=True) == json.dumps(
+        d, sort_keys=True
+    ), f"{original_d} != {d}"
 
 
 @pytest.mark.parametrize(
@@ -341,7 +362,13 @@ def test_backward_compatibility(repo_id):
     load_and_compare(i + 1)
 
     # test 2 frames at the middle of first episode
-    i = int((dataset.episode_data_index["to"][0].item() - dataset.episode_data_index["from"][0].item()) / 2)
+    i = int(
+        (
+            dataset.episode_data_index["to"][0].item()
+            - dataset.episode_data_index["from"][0].item()
+        )
+        / 2
+    )
     load_and_compare(i)
     load_and_compare(i + 1)
 
@@ -377,23 +404,40 @@ def test_aggregate_stats():
         data_c = torch.rand(20, dtype=torch.float32)
 
     hf_dataset_1 = Dataset.from_dict(
-        {"a": data_a[:10], "b": data_b[:10], "c": data_c[:10], "index": torch.arange(10)}
+        {
+            "a": data_a[:10],
+            "b": data_b[:10],
+            "c": data_c[:10],
+            "index": torch.arange(10),
+        }
     )
     hf_dataset_1.set_transform(hf_transform_to_torch)
-    hf_dataset_2 = Dataset.from_dict({"a": data_a[10:20], "b": data_b[10:], "index": torch.arange(10)})
+    hf_dataset_2 = Dataset.from_dict(
+        {"a": data_a[10:20], "b": data_b[10:], "index": torch.arange(10)}
+    )
     hf_dataset_2.set_transform(hf_transform_to_torch)
-    hf_dataset_3 = Dataset.from_dict({"a": data_a[20:], "c": data_c[10:], "index": torch.arange(10)})
+    hf_dataset_3 = Dataset.from_dict(
+        {"a": data_a[20:], "c": data_c[10:], "index": torch.arange(10)}
+    )
     hf_dataset_3.set_transform(hf_transform_to_torch)
     dataset_1 = LeRobotDataset.from_preloaded("d1", hf_dataset=hf_dataset_1)
-    dataset_1.stats = compute_stats(dataset_1, batch_size=len(hf_dataset_1), num_workers=0)
+    dataset_1.stats = compute_stats(
+        dataset_1, batch_size=len(hf_dataset_1), num_workers=0
+    )
     dataset_2 = LeRobotDataset.from_preloaded("d2", hf_dataset=hf_dataset_2)
-    dataset_2.stats = compute_stats(dataset_2, batch_size=len(hf_dataset_2), num_workers=0)
+    dataset_2.stats = compute_stats(
+        dataset_2, batch_size=len(hf_dataset_2), num_workers=0
+    )
     dataset_3 = LeRobotDataset.from_preloaded("d3", hf_dataset=hf_dataset_3)
-    dataset_3.stats = compute_stats(dataset_3, batch_size=len(hf_dataset_3), num_workers=0)
+    dataset_3.stats = compute_stats(
+        dataset_3, batch_size=len(hf_dataset_3), num_workers=0
+    )
     stats = aggregate_stats([dataset_1, dataset_2, dataset_3])
     for data_key, data in zip(["a", "b", "c"], [data_a, data_b, data_c], strict=True):
         for agg_fn in ["mean", "min", "max"]:
-            assert torch.allclose(stats[data_key][agg_fn], einops.reduce(data, "n -> 1", agg_fn))
+            assert torch.allclose(
+                stats[data_key][agg_fn], einops.reduce(data, "n -> 1", agg_fn)
+            )
         assert torch.allclose(stats[data_key]["std"], torch.std(data, correction=0))
 
 

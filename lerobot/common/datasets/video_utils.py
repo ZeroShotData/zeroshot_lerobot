@@ -48,17 +48,23 @@ def load_from_videos(
             timestamps = [frame["timestamp"] for frame in item[key]]
             paths = [frame["path"] for frame in item[key]]
             if len(set(paths)) > 1:
-                raise NotImplementedError("All video paths are expected to be the same for now.")
+                raise NotImplementedError(
+                    "All video paths are expected to be the same for now."
+                )
             video_path = data_dir / paths[0]
 
-            frames = decode_video_frames_torchvision(video_path, timestamps, tolerance_s, backend)
+            frames = decode_video_frames_torchvision(
+                video_path, timestamps, tolerance_s, backend
+            )
             item[key] = frames
         else:
             # load one frame
             timestamps = [item[key]["timestamp"]]
             video_path = data_dir / item[key]["path"]
 
-            frames = decode_video_frames_torchvision(video_path, timestamps, tolerance_s, backend)
+            frames = decode_video_frames_torchvision(
+                video_path, timestamps, tolerance_s, backend
+            )
             item[key] = frames[0]
 
     return item

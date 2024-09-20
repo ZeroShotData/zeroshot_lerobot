@@ -59,7 +59,6 @@ from pathlib import Path
 
 import tqdm
 from flask import Flask, redirect, render_template, url_for
-
 from lerobot.common.datasets.lerobot_dataset import LeRobotDataset
 from lerobot.common.utils.utils import init_logging
 
@@ -72,7 +71,11 @@ def run_server(
     static_folder: Path,
     template_folder: Path,
 ):
-    app = Flask(__name__, static_folder=static_folder.resolve(), template_folder=template_folder.resolve())
+    app = Flask(
+        __name__,
+        static_folder=static_folder.resolve(),
+        template_folder=template_folder.resolve(),
+    )
     app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0  # specifying not to cache
 
     @app.route("/")
@@ -89,7 +92,9 @@ def run_server(
             )
         )
 
-    @app.route("/<string:dataset_namespace>/<string:dataset_name>/episode_<int:episode_id>")
+    @app.route(
+        "/<string:dataset_namespace>/<string:dataset_name>/episode_<int:episode_id>"
+    )
     def show_episode(dataset_namespace, dataset_name, episode_id):
         dataset_info = {
             "repo_id": dataset.repo_id,
@@ -100,7 +105,10 @@ def run_server(
         video_paths = get_episode_video_paths(dataset, episode_id)
         language_instruction = get_episode_language_instruction(dataset, episode_id)
         videos_info = [
-            {"url": url_for("static", filename=video_path), "filename": Path(video_path).name}
+            {
+                "url": url_for("static", filename=video_path),
+                "filename": Path(video_path).name,
+            }
             for video_path in video_paths
         ]
         if language_instruction:
@@ -176,7 +184,9 @@ def get_episode_video_paths(dataset: LeRobotDataset, ep_index: int) -> list[str]
     ]
 
 
-def get_episode_language_instruction(dataset: LeRobotDataset, ep_index: int) -> list[str]:
+def get_episode_language_instruction(
+    dataset: LeRobotDataset, ep_index: int
+) -> list[str]:
     # check if the dataset has language instructions
     if "language_instruction" not in dataset.hf_dataset.features:
         return None
@@ -187,7 +197,9 @@ def get_episode_language_instruction(dataset: LeRobotDataset, ep_index: int) -> 
     language_instruction = dataset.hf_dataset[first_frame_idx]["language_instruction"]
     # TODO (michel-aractingi) hack to get the sentence, some strings in openx are badly stored
     # with the tf.tensor appearing in the string
-    return language_instruction.removeprefix("tf.Tensor(b'").removesuffix("', shape=(), dtype=string)")
+    return language_instruction.removeprefix("tf.Tensor(b'").removesuffix(
+        "', shape=(), dtype=string)"
+    )
 
 
 def visualize_dataset_html(
@@ -205,7 +217,9 @@ def visualize_dataset_html(
     dataset = LeRobotDataset(repo_id, root=root)
 
     if not dataset.video:
-        raise NotImplementedError(f"Image datasets ({dataset.video=}) are currently not supported.")
+        raise NotImplementedError(
+            f"Image datasets ({dataset.video=}) are currently not supported."
+        )
 
     if output_dir is None:
         output_dir = f"outputs/visualize_dataset_html/{repo_id}"
@@ -215,7 +229,9 @@ def visualize_dataset_html(
         if force_override:
             shutil.rmtree(output_dir)
         else:
-            logging.info(f"Output directory already exists. Loading from it: '{output_dir}'")
+            logging.info(
+                f"Output directory already exists. Loading from it: '{output_dir}'"
+            )
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
