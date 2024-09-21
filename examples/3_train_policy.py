@@ -8,10 +8,8 @@ from pathlib import Path
 
 import torch
 from lerobot.common.datasets.lerobot_dataset import LeRobotDataset
-from lerobot.common.policies.diffusion.configuration_diffusion import \
-    DiffusionConfig
-from lerobot.common.policies.diffusion.modeling_diffusion import \
-    DiffusionPolicy
+from lerobot.common.policies.diffusion.configuration_diffusion import DiffusionConfig
+from lerobot.common.policies.diffusion.modeling_diffusion import DiffusionPolicy
 
 # Create a directory to store the training checkpoint.
 output_directory = Path("outputs/train/example_pusht_diffusion")

@@ -16,8 +16,7 @@
 import logging
 
 import torch
-from lerobot.common.datasets.lerobot_dataset import (LeRobotDataset,
-                                                     MultiLeRobotDataset)
+from lerobot.common.datasets.lerobot_dataset import LeRobotDataset, MultiLeRobotDataset
 from lerobot.common.datasets.transforms import get_image_transforms
 from omegaconf import ListConfig, OmegaConf
 

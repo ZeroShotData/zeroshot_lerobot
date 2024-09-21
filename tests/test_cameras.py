@@ -11,9 +11,13 @@ import numpy as np
 import pytest
 from lerobot import available_robots
 from lerobot.common.robot_devices.cameras.opencv import (
-    OpenCVCamera, save_images_from_cameras)
+    OpenCVCamera,
+    save_images_from_cameras,
+)
 from lerobot.common.robot_devices.utils import (
-    RobotDeviceAlreadyConnectedError, RobotDeviceNotConnectedError)
+    RobotDeviceAlreadyConnectedError,
+    RobotDeviceNotConnectedError,
+)
 
 from tests.utils import require_robot
 

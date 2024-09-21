@@ -67,9 +67,13 @@ from lerobot.common.policies.factory import make_policy
 from lerobot.common.policies.policy_protocol import Policy
 from lerobot.common.policies.utils import get_device_from_parameters
 from lerobot.common.utils.io_utils import write_video
-from lerobot.common.utils.utils import (get_safe_torch_device,
-                                        init_hydra_config, init_logging,
-                                        inside_slurm, set_global_seed)
+from lerobot.common.utils.utils import (
+    get_safe_torch_device,
+    init_hydra_config,
+    init_logging,
+    inside_slurm,
+    set_global_seed,
+)
 from torch import Tensor, nn
 from tqdm import trange
 

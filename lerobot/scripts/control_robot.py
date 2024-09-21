@@ -114,29 +114,34 @@ from pathlib import Path
 import cv2
 import torch
 import tqdm
+
 # from safetensors.torch import load_file, save_file
 from lerobot.common.datasets.compute_stats import compute_stats
-from lerobot.common.datasets.lerobot_dataset import (CODEBASE_VERSION,
-                                                     LeRobotDataset)
-from lerobot.common.datasets.push_dataset_to_hub.aloha_hdf5_format import \
-    to_hf_dataset
+from lerobot.common.datasets.lerobot_dataset import CODEBASE_VERSION, LeRobotDataset
+from lerobot.common.datasets.push_dataset_to_hub.aloha_hdf5_format import to_hf_dataset
 from lerobot.common.datasets.push_dataset_to_hub.utils import (
-    concatenate_episodes, get_default_encoding)
-from lerobot.common.datasets.utils import (calculate_episode_data_index,
-                                           create_branch)
+    concatenate_episodes,
+    get_default_encoding,
+)
+from lerobot.common.datasets.utils import calculate_episode_data_index, create_branch
 from lerobot.common.datasets.video_utils import encode_video_frames
 from lerobot.common.policies.factory import make_policy
 from lerobot.common.robot_devices.robots.factory import make_robot
 from lerobot.common.robot_devices.robots.utils import Robot, get_arm_id
 from lerobot.common.robot_devices.utils import busy_wait
-from lerobot.common.utils.utils import (get_safe_torch_device,
-                                        init_hydra_config, init_logging,
-                                        set_global_seed)
+from lerobot.common.utils.utils import (
+    get_safe_torch_device,
+    init_hydra_config,
+    init_logging,
+    set_global_seed,
+)
 from lerobot.scripts.eval import get_pretrained_policy_path
-from lerobot.scripts.push_dataset_to_hub import (push_dataset_card_to_hub,
-                                                 push_meta_data_to_hub,
-                                                 push_videos_to_hub,
-                                                 save_meta_data)
+from lerobot.scripts.push_dataset_to_hub import (
+    push_dataset_card_to_hub,
+    push_meta_data_to_hub,
+    push_videos_to_hub,
+    save_meta_data,
+)
 from omegaconf import DictConfig
 from PIL import Image
 from termcolor import colored

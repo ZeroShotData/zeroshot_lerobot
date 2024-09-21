@@ -38,13 +38,17 @@ from typing import Any, Dict
 
 import tensorflow as tf
 from lerobot.common.datasets.push_dataset_to_hub.openx.data_utils import (
-    binarize_gripper_actions, invert_gripper_actions, rel2abs_gripper_actions,
-    relabel_bridge_actions)
+    binarize_gripper_actions,
+    invert_gripper_actions,
+    rel2abs_gripper_actions,
+    relabel_bridge_actions,
+)
 
 
 def droid_baseact_transform_fn():
-    from lerobot.common.datasets.push_dataset_to_hub.openx.droid_utils import \
-        droid_baseact_transform
+    from lerobot.common.datasets.push_dataset_to_hub.openx.droid_utils import (
+        droid_baseact_transform,
+    )
 
     return droid_baseact_transform
 

@@ -6,13 +6,18 @@ import numpy as np
 import pytest
 import torch
 from datasets import Dataset
-from lerobot.common.datasets.utils import (calculate_episode_data_index,
-                                           hf_transform_to_torch,
-                                           reset_episode_index)
-from lerobot.common.utils.utils import (get_global_random_state,
-                                        init_hydra_config, seeded_context,
-                                        set_global_random_state,
-                                        set_global_seed)
+from lerobot.common.datasets.utils import (
+    calculate_episode_data_index,
+    hf_transform_to_torch,
+    reset_episode_index,
+)
+from lerobot.common.utils.utils import (
+    get_global_random_state,
+    init_hydra_config,
+    seeded_context,
+    set_global_random_state,
+    set_global_seed,
+)
 
 # Random generation functions for testing the seeding and random state get/set.
 rand_fns = [

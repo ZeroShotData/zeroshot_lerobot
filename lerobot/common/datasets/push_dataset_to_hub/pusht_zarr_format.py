@@ -25,9 +25,14 @@ import zarr
 from datasets import Dataset, Features, Image, Sequence, Value
 from lerobot.common.datasets.lerobot_dataset import CODEBASE_VERSION
 from lerobot.common.datasets.push_dataset_to_hub.utils import (
-    concatenate_episodes, get_default_encoding, save_images_concurrently)
-from lerobot.common.datasets.utils import (calculate_episode_data_index,
-                                           hf_transform_to_torch)
+    concatenate_episodes,
+    get_default_encoding,
+    save_images_concurrently,
+)
+from lerobot.common.datasets.utils import (
+    calculate_episode_data_index,
+    hf_transform_to_torch,
+)
 from lerobot.common.datasets.video_utils import VideoFrame, encode_video_frames
 from PIL import Image as PILImage
 
@@ -67,8 +72,9 @@ def load_from_raw(
     try:
         import pymunk
         from gym_pusht.envs.pusht import PushTEnv, pymunk_to_shapely
-        from lerobot.common.datasets.push_dataset_to_hub._diffusion_policy_replay_buffer import \
-            ReplayBuffer as DiffusionPolicyReplayBuffer
+        from lerobot.common.datasets.push_dataset_to_hub._diffusion_policy_replay_buffer import (
+            ReplayBuffer as DiffusionPolicyReplayBuffer,
+        )
     except ModuleNotFoundError as e:
         print(
             "`gym_pusht` is not installed. Please install it with `pip install 'lerobot[gym_pusht]'`"

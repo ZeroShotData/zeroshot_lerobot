@@ -10,11 +10,16 @@ import numpy as np
 import torch
 from lerobot.common.robot_devices.cameras.utils import Camera
 from lerobot.common.robot_devices.motors.dynamixel import (
-    CalibrationMode, TorqueMode, convert_degrees_to_steps)
+    CalibrationMode,
+    TorqueMode,
+    convert_degrees_to_steps,
+)
 from lerobot.common.robot_devices.motors.utils import MotorsBus
 from lerobot.common.robot_devices.robots.utils import get_arm_id
 from lerobot.common.robot_devices.utils import (
-    RobotDeviceAlreadyConnectedError, RobotDeviceNotConnectedError)
+    RobotDeviceAlreadyConnectedError,
+    RobotDeviceNotConnectedError,
+)
 
 ########################################################################
 # Calibration logic

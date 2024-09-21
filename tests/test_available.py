@@ -19,8 +19,7 @@ import gymnasium as gym
 import lerobot
 import pytest
 from lerobot.common.policies.act.modeling_act import ACTPolicy
-from lerobot.common.policies.diffusion.modeling_diffusion import \
-    DiffusionPolicy
+from lerobot.common.policies.diffusion.modeling_diffusion import DiffusionPolicy
 from lerobot.common.policies.tdmpc.modeling_tdmpc import TDMPCPolicy
 from lerobot.common.policies.vqbet.modeling_vqbet import VQBeTPolicy
 

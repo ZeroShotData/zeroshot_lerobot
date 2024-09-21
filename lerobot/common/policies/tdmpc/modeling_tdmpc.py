@@ -36,8 +36,7 @@ import torch.nn.functional as F  # noqa: N812
 from huggingface_hub import PyTorchModelHubMixin
 from lerobot.common.policies.normalize import Normalize, Unnormalize
 from lerobot.common.policies.tdmpc.configuration_tdmpc import TDMPCConfig
-from lerobot.common.policies.utils import (get_device_from_parameters,
-                                           populate_queues)
+from lerobot.common.policies.utils import get_device_from_parameters, populate_queues
 from torch import Tensor
 
 

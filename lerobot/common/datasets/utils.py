@@ -23,8 +23,7 @@ from typing import Dict
 import datasets
 import torch
 from datasets import load_dataset, load_from_disk
-from huggingface_hub import (DatasetCard, HfApi, hf_hub_download,
-                             snapshot_download)
+from huggingface_hub import DatasetCard, HfApi, hf_hub_download, snapshot_download
 from PIL import Image as PILImage
 from safetensors.torch import load_file
 from torchvision import transforms

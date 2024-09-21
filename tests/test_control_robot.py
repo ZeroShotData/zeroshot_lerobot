@@ -4,8 +4,7 @@ import pytest
 from lerobot import available_robots
 from lerobot.common.policies.factory import make_policy
 from lerobot.common.utils.utils import init_hydra_config
-from lerobot.scripts.control_robot import (calibrate, record, replay,
-                                           teleoperate)
+from lerobot.scripts.control_robot import calibrate, record, replay, teleoperate
 
 from tests.test_robots import make_robot
 from tests.utils import DEFAULT_CONFIG_PATH, DEVICE, require_robot

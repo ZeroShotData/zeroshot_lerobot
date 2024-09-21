@@ -21,8 +21,7 @@ import pytest
 import torch
 from datasets import Dataset
 from lerobot.common.datasets.lerobot_dataset import LeRobotDataset
-from lerobot.common.datasets.online_buffer import (OnlineBuffer,
-                                                   compute_sampler_weights)
+from lerobot.common.datasets.online_buffer import OnlineBuffer, compute_sampler_weights
 from lerobot.common.datasets.utils import hf_transform_to_torch
 
 # Some constants for OnlineBuffer tests.

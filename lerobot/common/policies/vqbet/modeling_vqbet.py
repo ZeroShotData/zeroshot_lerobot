@@ -28,8 +28,7 @@ import torch.nn.functional as F  # noqa: N812
 import torchvision
 from huggingface_hub import PyTorchModelHubMixin
 from lerobot.common.policies.normalize import Normalize, Unnormalize
-from lerobot.common.policies.utils import (get_device_from_parameters,
-                                           populate_queues)
+from lerobot.common.policies.utils import get_device_from_parameters, populate_queues
 from lerobot.common.policies.vqbet.configuration_vqbet import VQBeTConfig
 from lerobot.common.policies.vqbet.vqbet_utils import GPT, ResidualVQ
 from torch import Tensor, nn

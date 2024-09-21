@@ -15,8 +15,7 @@ import numpy as np
 import pytest
 import torch
 from lerobot.common.datasets.lerobot_dataset import LeRobotDataset
-from lerobot.common.datasets.push_dataset_to_hub.utils import \
-    save_images_concurrently
+from lerobot.common.datasets.push_dataset_to_hub.utils import save_images_concurrently
 from lerobot.common.datasets.video_utils import encode_video_frames
 from lerobot.scripts.push_dataset_to_hub import push_dataset_to_hub
 

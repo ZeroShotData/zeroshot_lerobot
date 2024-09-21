@@ -16,7 +16,10 @@ from threading import Thread
 import cv2
 import numpy as np
 from lerobot.common.robot_devices.utils import (
-    RobotDeviceAlreadyConnectedError, RobotDeviceNotConnectedError, busy_wait)
+    RobotDeviceAlreadyConnectedError,
+    RobotDeviceNotConnectedError,
+    busy_wait,
+)
 from lerobot.common.utils.utils import capture_timestamp_utc
 from PIL import Image
 

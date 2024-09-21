@@ -8,11 +8,21 @@ from pathlib import Path
 
 import numpy as np
 import tqdm
-from dynamixel_sdk import (COMM_SUCCESS, DXL_HIBYTE, DXL_HIWORD, DXL_LOBYTE,
-                           DXL_LOWORD, GroupSyncRead, GroupSyncWrite,
-                           PacketHandler, PortHandler)
+from dynamixel_sdk import (
+    COMM_SUCCESS,
+    DXL_HIBYTE,
+    DXL_HIWORD,
+    DXL_LOBYTE,
+    DXL_LOWORD,
+    GroupSyncRead,
+    GroupSyncWrite,
+    PacketHandler,
+    PortHandler,
+)
 from lerobot.common.robot_devices.utils import (
-    RobotDeviceAlreadyConnectedError, RobotDeviceNotConnectedError)
+    RobotDeviceAlreadyConnectedError,
+    RobotDeviceNotConnectedError,
+)
 from lerobot.common.utils.utils import capture_timestamp_utc
 
 PROTOCOL_VERSION = 2.0

@@ -12,11 +12,14 @@ from pathlib import Path
 import pytest
 import torch
 from lerobot import available_robots
-from lerobot.common.robot_devices.robots.factory import \
-    make_robot as make_robot_from_cfg
+from lerobot.common.robot_devices.robots.factory import (
+    make_robot as make_robot_from_cfg,
+)
 from lerobot.common.robot_devices.robots.utils import Robot
 from lerobot.common.robot_devices.utils import (
-    RobotDeviceAlreadyConnectedError, RobotDeviceNotConnectedError)
+    RobotDeviceAlreadyConnectedError,
+    RobotDeviceNotConnectedError,
+)
 from lerobot.common.utils.utils import init_hydra_config
 
 from tests.utils import ROBOT_CONFIG_PATH_TEMPLATE, require_robot
@@ -35,8 +38,7 @@ def test_robot(tmpdir, request, robot_type):
     # TODO(rcadene): measure fps in nightly?
     # TODO(rcadene): test logs
     # TODO(rcadene): add compatibility with other robots
-    from lerobot.common.robot_devices.robots.manipulator import \
-        ManipulatorRobot
+    from lerobot.common.robot_devices.robots.manipulator import ManipulatorRobot
 
     # Save calibration preset
     tmpdir = Path(tmpdir)

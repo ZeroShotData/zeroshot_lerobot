@@ -52,37 +52,45 @@ from typing import Any
 import torch
 from huggingface_hub import HfApi
 from lerobot.common.datasets.compute_stats import compute_stats
-from lerobot.common.datasets.lerobot_dataset import (CODEBASE_VERSION,
-                                                     LeRobotDataset)
+from lerobot.common.datasets.lerobot_dataset import CODEBASE_VERSION, LeRobotDataset
 from lerobot.common.datasets.push_dataset_to_hub.utils import check_repo_id
-from lerobot.common.datasets.utils import (create_branch,
-                                           create_lerobot_dataset_card,
-                                           flatten_dict)
+from lerobot.common.datasets.utils import (
+    create_branch,
+    create_lerobot_dataset_card,
+    flatten_dict,
+)
 from safetensors.torch import save_file
 
 
 def get_from_raw_to_lerobot_format_fn(raw_format: str):
     if raw_format == "pusht_zarr":
-        from lerobot.common.datasets.push_dataset_to_hub.pusht_zarr_format import \
-            from_raw_to_lerobot_format
+        from lerobot.common.datasets.push_dataset_to_hub.pusht_zarr_format import (
+            from_raw_to_lerobot_format,
+        )
     elif raw_format == "umi_zarr":
-        from lerobot.common.datasets.push_dataset_to_hub.umi_zarr_format import \
-            from_raw_to_lerobot_format
+        from lerobot.common.datasets.push_dataset_to_hub.umi_zarr_format import (
+            from_raw_to_lerobot_format,
+        )
     elif raw_format == "aloha_hdf5":
-        from lerobot.common.datasets.push_dataset_to_hub.aloha_hdf5_format import \
-            from_raw_to_lerobot_format
+        from lerobot.common.datasets.push_dataset_to_hub.aloha_hdf5_format import (
+            from_raw_to_lerobot_format,
+        )
     elif "openx_rlds" in raw_format:
-        from lerobot.common.datasets.push_dataset_to_hub.openx_rlds_format import \
-            from_raw_to_lerobot_format
+        from lerobot.common.datasets.push_dataset_to_hub.openx_rlds_format import (
+            from_raw_to_lerobot_format,
+        )
     elif raw_format == "dora_parquet":
-        from lerobot.common.datasets.push_dataset_to_hub.dora_parquet_format import \
-            from_raw_to_lerobot_format
+        from lerobot.common.datasets.push_dataset_to_hub.dora_parquet_format import (
+            from_raw_to_lerobot_format,
+        )
     elif raw_format == "xarm_pkl":
-        from lerobot.common.datasets.push_dataset_to_hub.xarm_pkl_format import \
-            from_raw_to_lerobot_format
+        from lerobot.common.datasets.push_dataset_to_hub.xarm_pkl_format import (
+            from_raw_to_lerobot_format,
+        )
     elif raw_format == "cam_png":
-        from lerobot.common.datasets.push_dataset_to_hub.cam_png_format import \
-            from_raw_to_lerobot_format
+        from lerobot.common.datasets.push_dataset_to_hub.cam_png_format import (
+            from_raw_to_lerobot_format,
+        )
     else:
         raise ValueError(
             f"The selected {raw_format} can't be found. Did you add it to `lerobot/scripts/push_dataset_to_hub.py::get_from_raw_to_lerobot_format_fn`?"

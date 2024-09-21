@@ -26,11 +26,9 @@ import hydra
 import numpy as np
 import torch
 from deepdiff import DeepDiff
-from lerobot.common.datasets.factory import (make_dataset,
-                                             resolve_delta_timestamps)
+from lerobot.common.datasets.factory import make_dataset, resolve_delta_timestamps
 from lerobot.common.datasets.lerobot_dataset import MultiLeRobotDataset
-from lerobot.common.datasets.online_buffer import (OnlineBuffer,
-                                                   compute_sampler_weights)
+from lerobot.common.datasets.online_buffer import OnlineBuffer, compute_sampler_weights
 from lerobot.common.datasets.sampler import EpisodeAwareSampler
 from lerobot.common.datasets.utils import cycle
 from lerobot.common.envs.factory import make_env
@@ -38,10 +36,13 @@ from lerobot.common.logger import Logger, log_output_dir
 from lerobot.common.policies.factory import make_policy
 from lerobot.common.policies.policy_protocol import PolicyWithUpdate
 from lerobot.common.policies.utils import get_device_from_parameters
-from lerobot.common.utils.utils import (format_big_number,
-                                        get_safe_torch_device,
-                                        init_hydra_config, init_logging,
-                                        set_global_seed)
+from lerobot.common.utils.utils import (
+    format_big_number,
+    get_safe_torch_device,
+    init_hydra_config,
+    init_logging,
+    set_global_seed,
+)
 from lerobot.scripts.eval import eval_policy
 from omegaconf import DictConfig, ListConfig, OmegaConf
 from termcolor import colored
@@ -95,7 +96,9 @@ def make_optimizer_and_scheduler(cfg, policy):
         lr_scheduler = None
     elif cfg.policy.name == "vqbet":
         from lerobot.common.policies.vqbet.modeling_vqbet import (
-            VQBeTOptimizer, VQBeTScheduler)
+            VQBeTOptimizer,
+            VQBeTScheduler,
+        )
 
         optimizer = VQBeTOptimizer(policy, cfg)
         lr_scheduler = VQBeTScheduler(optimizer, cfg)

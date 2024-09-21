@@ -19,9 +19,11 @@ import numpy as np
 import pytest
 import torch
 from lerobot.common.datasets.lerobot_dataset import LeRobotDataset
-from lerobot.common.datasets.transforms import (RandomSubsetApply,
-                                                SharpnessJitter,
-                                                get_image_transforms)
+from lerobot.common.datasets.transforms import (
+    RandomSubsetApply,
+    SharpnessJitter,
+    get_image_transforms,
+)
 from lerobot.common.utils.utils import init_hydra_config, seeded_context
 from lerobot.scripts.visualize_image_transforms import visualize_transforms
 from PIL import Image

@@ -21,7 +21,9 @@ from lerobot import available_robots
 from lerobot.common.robot_devices.motors.utils import MotorsBus
 from lerobot.common.robot_devices.robots.factory import make_robot
 from lerobot.common.robot_devices.utils import (
-    RobotDeviceAlreadyConnectedError, RobotDeviceNotConnectedError)
+    RobotDeviceAlreadyConnectedError,
+    RobotDeviceNotConnectedError,
+)
 from lerobot.common.utils.utils import init_hydra_config
 
 from tests.utils import ROBOT_CONFIG_PATH_TEMPLATE, require_robot

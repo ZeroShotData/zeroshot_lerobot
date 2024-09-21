@@ -11,8 +11,7 @@ import imageio
 import numpy
 import torch
 from huggingface_hub import snapshot_download
-from lerobot.common.policies.diffusion.modeling_diffusion import \
-    DiffusionPolicy
+from lerobot.common.policies.diffusion.modeling_diffusion import DiffusionPolicy
 
 # Create a directory to store the video of the evaluation
 output_directory = Path("outputs/eval/example_pusht_diffusion")

@@ -27,9 +27,11 @@ from lerobot.common.datasets.utils import cycle
 from lerobot.common.envs.factory import make_env
 from lerobot.common.envs.utils import preprocess_observation
 from lerobot.common.policies.act.modeling_act import ACTTemporalEnsembler
-from lerobot.common.policies.factory import (_policy_cfg_from_hydra_cfg,
-                                             get_policy_and_config_classes,
-                                             make_policy)
+from lerobot.common.policies.factory import (
+    _policy_cfg_from_hydra_cfg,
+    get_policy_and_config_classes,
+    make_policy,
+)
 from lerobot.common.policies.normalize import Normalize, Unnormalize
 from lerobot.common.policies.policy_protocol import Policy
 from lerobot.common.utils.utils import init_hydra_config, seeded_context
@@ -37,8 +39,13 @@ from lerobot.scripts.train import make_optimizer_and_scheduler
 from safetensors.torch import load_file
 
 from tests.scripts.save_policy_to_safetensors import get_policy_stats
-from tests.utils import (DEFAULT_CONFIG_PATH, DEVICE, require_cpu, require_env,
-                         require_x86_64_kernel)
+from tests.utils import (
+    DEFAULT_CONFIG_PATH,
+    DEVICE,
+    require_cpu,
+    require_env,
+    require_x86_64_kernel,
+)
 
 
 @pytest.mark.parametrize("policy_name", available_policies)

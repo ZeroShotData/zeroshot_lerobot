@@ -27,8 +27,7 @@ from pathlib import Path
 import torch
 from huggingface_hub.constants import SAFETENSORS_SINGLE_FILE
 from lerobot.common.policies.policy_protocol import Policy
-from lerobot.common.utils.utils import (get_global_random_state,
-                                        set_global_random_state)
+from lerobot.common.utils.utils import get_global_random_state, set_global_random_state
 from omegaconf import DictConfig, OmegaConf
 from termcolor import colored
 from torch.optim import Optimizer

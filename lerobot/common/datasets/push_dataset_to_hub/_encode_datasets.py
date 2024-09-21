@@ -38,8 +38,9 @@ import argparse
 from pathlib import Path
 
 from lerobot.common.datasets.lerobot_dataset import CODEBASE_VERSION
-from lerobot.common.datasets.push_dataset_to_hub._download_raw import \
-    AVAILABLE_RAW_REPO_IDS
+from lerobot.common.datasets.push_dataset_to_hub._download_raw import (
+    AVAILABLE_RAW_REPO_IDS,
+)
 from lerobot.common.datasets.push_dataset_to_hub.utils import check_repo_id
 from lerobot.scripts.push_dataset_to_hub import push_dataset_to_hub
 
